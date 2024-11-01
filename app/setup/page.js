@@ -66,29 +66,31 @@ export default function Setup() {
   }
   
   return (
-    <Box p={4}>
+    <Box w={"100%"} h={"100%"} p={4} mt={10} mb={10} >
       <Flex direction="column" align="center">
         <Heading as="h1" size="2xl" mb={4}>
-          Welcome {userRole? fullName : ""} !
+          Hola {userRole? fullName : ""} !
         </Heading>
         <Text fontSize="xl">
-          You are successfully logged in.
+          Has accedido con exito.
         </Text>
       </Flex>
       <Flex direction="column" align="center" mt={8}>
         <Heading as="h2" size="xl" mb={4}>Setups</Heading>
-        <StandardTable 
-                data={setups} 
-                setData={setSetups}
-                columns={columns} 
-                title={"Setup"} 
-                hideColumn={['id', 'created_at']} 
-                dateColumn={["created_at"]}
-                uploadFunction={createSetup}
-                dataStructure={columns}
-                editFunction={updateSetup}
-                deleteFunction={deleteSetup}
-            />
+        <Box w="100%" overflowX="auto" mb={8}>
+          <StandardTable 
+                  data={setups} 
+                  setData={setSetups}
+                  columns={columns} 
+                  title={"Setup"} 
+                  hideColumn={['id', 'created_at']} 
+                  dateColumn={["created_at"]}
+                  uploadFunction={createSetup}
+                  dataStructure={columns}
+                  editFunction={updateSetup}
+                  deleteFunction={deleteSetup}
+              />
+        </Box>
       </Flex>
     </Box>
   );

@@ -2,9 +2,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { login } from './actions';
-import { Input, Button, Box, Heading, InputGroup, InputRightElement, IconButton, Text, Spinner } from '@chakra-ui/react';
+import { Input, Button, Box, Heading, InputGroup, InputRightElement, IconButton, Text, Spinner, Flex } from '@chakra-ui/react';
 import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
-
+import Image from 'next/image';
+import Logo from '@/public/DICA_LogoVector.png'
 const Login = () => {
   const [formData, setFormData] = useState({
     email: '',
@@ -40,14 +41,25 @@ const Login = () => {
   };
 
   return (
-    <Box className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+    <Box className="flex flex-col items-center justify-center min-h-screen bg-gray-200">
       <Heading as="h1" size="xl" mb={6}>
-        Login
+        <Flex flexDir={"column"} justify={"center"} align={"center"} gap={2}>
+          <Text as="span" color="blue.900" fontWeight="bold" fontSize="2xl" className="text-4xl font-bold text-blue-500">
+            Iniciar sesión
+          </Text>
+          <Image 
+            src={Logo} 
+            width={100}
+            height={100}
+            alt="Logo" 
+            priority={false}
+          />
+        </Flex>
       </Heading>
       <form className="space-y-4" onSubmit={handleLogin}>
         <Input
           type="email"
-          placeholder="Email"
+          placeholder="Correo"
           value={formData.email}
           onChange={(e) => setFormData({ ...formData, email: e.target.value.trim() })}
           required
@@ -57,7 +69,7 @@ const Login = () => {
         <InputGroup>
           <Input
             type={showPassword ? 'text' : 'password'}
-            placeholder="Password"
+            placeholder="Contraseña"
             value={formData.password}
             onChange={(e) => setFormData({ ...formData, password: e.target.value.trim() })}
             required

@@ -136,10 +136,10 @@ export default function Auditor() {
     <Box w={"100%"} h={"100%"} p={4} mt={10} mb={10} >
       <Flex direction="column" align="center">
         <Heading as="h1" size="2xl" mb={4}>
-          Welcome {userRole? fullName : ""} !
+          Hola {userRole? fullName : ""} !
         </Heading>
         <Text fontSize="xl">
-          You are successfully logged in.
+          Has accedido con exito.
         </Text>
       </Flex>
       <Flex direction="column" align="center" mt={8}>

@@ -17,7 +17,7 @@ export async function sendEmail(email, name, password, subject, body) {
     from: process.env.EMAIL_USER,
     to: email,
     subject: subject || 'Welcome to Our Service!',
-    text: body || `Hello ${name},\n\nYour account has been created successfully.\n\nYour login details are:\nEmail: ${email}\nPassword: ${password}\n\nPlease log in and change your password after your first login.\n\nThank you!`,
+    html: body || `Hello ${name},\n\nYour account has been created successfully.\n\nYour login details are:\nEmail: ${email}\nPassword: ${password}\n\nPlease log in and change your password after your first login.\n\nThank you!`,
   };
   
 

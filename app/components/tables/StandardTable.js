@@ -77,7 +77,7 @@ const StandardTable = ({ data,setData, columns, title, hideColumn, dropdownColum
 
 
   return (
-      <Box w="100%" h="100%" p={4}   >
+      <Box w="full" p={4}   >
           <Grid gridRow={2} gridColumn={2} gridTemplateColumns={{ base: '1fr', md: '1fr 1fr' }} gap={4} m={10} >
           
               <Flex flexDir={'column'} align="flex-start" justify="space-between" mb={4} >
@@ -100,7 +100,7 @@ const StandardTable = ({ data,setData, columns, title, hideColumn, dropdownColum
               </Flex>
 
           </Grid>
-          <Box overflowX="auto" w="100%"  >
+          <Box overflowX="auto" w="full"  >
               <DataTable 
                       value={data}
                       tableStyle={{ 
