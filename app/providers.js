@@ -12,7 +12,7 @@ export function Providers({ children }) {
       
       setUserRole(role)
     }
-    fetchUserRole()
+    if(userRole === null) fetchUserRole()
 
   }, [userRole])
   return <UserRoleContext.Provider value={{ userRole }}><ChakraProvider >{children}</ChakraProvider></UserRoleContext.Provider>

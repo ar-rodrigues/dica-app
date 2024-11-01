@@ -13,11 +13,8 @@ export default function Home() {
     if (userRole) {
       setRole(userRole.role)
       setFullName(`${userRole.fullName}`)
-    } else {
-      setTimeout(() => {
-        window.reload()
-      }, 2000)
-    }
+    } 
+    console.log(userRole)
   },[userRole])
 
 
