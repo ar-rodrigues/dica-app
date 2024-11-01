@@ -5,16 +5,17 @@ import {
     InputGroup, InputLeftElement, Button 
     } from "@chakra-ui/react";
 import { FaCheckCircle, FaUpload, FaTimes  } from "react-icons/fa";
-import { v4 as uuid4 } from "uuid"
 
-const FileUploadField = forwardRef(({ register, name }, ref) => {
+const FileUploadField = forwardRef(({ register, name, data }, ref) => {
     const [files, setFiles] = useState([]);
-    const [fileNames, setFileNames] = useState([]);
+    const [fileNames, setFileNames] = useState(data || []);
+    console.log(data)
+    console.log(fileNames)
 
     const handleFileChange = useCallback((e) => {
         const selectedFiles = Array.from(e.target.files);
-        setFiles(selectedFiles);
-        setFileNames(selectedFiles.map(file => `${uuid4()}-${file.name}`));
+        setFiles((prevFiles) => [...prevFiles, ...selectedFiles]); 
+        setFileNames((prevFileNames) => [...prevFileNames, ...selectedFiles.map(file => `${file.name}`)]); // update the file names
         register(name).onChange({ target: { name, value: selectedFiles } });
       }, [register, name]);
 
@@ -52,7 +53,7 @@ const FileUploadField = forwardRef(({ register, name }, ref) => {
                         {fileNames.map((fileName, index) => (
                             <ListItem key={index}>
                                 <ListIcon as={FaCheckCircle} color='green.500' />
-                                {fileName}
+                                <Text fontSize={"xs"} noOfLines={[1,2]} >{fileName}</Text>
                                 <Button onClick={() => handleRemoveFile(index)} size="10px" variant='outline' colorScheme="red" ml={4} >
                                     <FaTimes />
                                 </Button>

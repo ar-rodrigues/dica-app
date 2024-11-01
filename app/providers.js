@@ -2,18 +2,17 @@
 import { ChakraProvider } from '@chakra-ui/react'
 import { UserRoleContext } from './contexts'
 import { checkUserRole } from './login/actions'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 export function Providers({ children }) {  
   const [userRole, setUserRole] = useState(null)
 
   useEffect(() => {
     const fetchUserRole = async () => {
       const role = await checkUserRole()
-      
-      setUserRole(role)
+      setUserRole(role) 
     }
-    if(userRole === null) fetchUserRole()
+    fetchUserRole() 
+  }, [])
 
-  }, [userRole])
   return <UserRoleContext.Provider value={{ userRole }}><ChakraProvider >{children}</ChakraProvider></UserRoleContext.Provider>
 }

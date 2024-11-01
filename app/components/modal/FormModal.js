@@ -22,7 +22,7 @@ import FileUploadField from "./FileUploadField";
 import CameraCapture from "./CameraCapture";
 
 
-const FormModal = forwardRef(({ isOpen, onClose, title, fields, setupOptions, hideField, isComment, setIsLoading, storeFiles, createDocument, useFormHook, isSubmitted, setIsSubmitted },webcamRef) => {
+const FormModal = forwardRef(({ isOpen, onClose, title, fields, setupOptions, hideField, isComment,webcamRef, useFormHook, isSubmitted, setIsSubmitted, onSubmit },ref) => {
   const {
     register,
     handleSubmit,
@@ -48,31 +48,6 @@ const FormModal = forwardRef(({ isOpen, onClose, title, fields, setupOptions, hi
     }
   }, [selectedUnidad, setValue, setupOptions]);
 
-  const onSubmit = async (data) => {
-    console.log("sendind files")
-    try {
-      setIsLoading({fileId:data.id, loading:true})
-      const storeNewFiles = await storeFiles(data)
-      if (storeNewFiles) {
-        const storedFilePaths = storeNewFiles.filePaths
-        const newDocument = await createDocument({...data, documento: storedFilePaths.documentoPath, foto: storedFilePaths.fotoPath})
-        newDocument && setIsSubmitted(true);
-        if (!newDocument) throw new Error("Error creating document. Document creation aborted.")
-      } else  {
-        console.error("Error storing files. Document creation aborted.")
-        setIsLoading({fileId:data.id, loading:false})
-        return console.log("Error storing files")
-      }
-    } catch (error) {
-      console.error("Error creating document:", error)
-      setIsLoading({fileId:data.id, loading:false})
-    } finally {
-      setIsLoading({fileId:data.id, loading:false})
-      onClose()
-      setIsSubmitted(false) && reset()
-    }
-
-  };
 
   
   useEffect(() => {
@@ -80,6 +55,7 @@ const FormModal = forwardRef(({ isOpen, onClose, title, fields, setupOptions, hi
       reset(); 
     } else if(!isOpen){
         reset();
+        onClose()
     }
   }, [isSubmitted, isOpen]);
 

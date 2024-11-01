@@ -3,7 +3,7 @@ import { v4 as uuid4 } from 'uuid'
 import slugify from 'slugify';
 
 
-export default async function storeFiles({documento, foto, nombre, unidad_adm, filePath=null, isUpdate = false}) {
+export async function storeFiles({documento, foto, nombre, unidad_adm, filePath=null, isUpdate = false}) {
     const supabase = createClient();
     
     const filePaths = {documentoPath:[],fotoPath:[]} // Initialize filePaths object

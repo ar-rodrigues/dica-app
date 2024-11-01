@@ -1,13 +1,15 @@
 'use client'
-import { Box, Flex, Heading, Text, Spinner } from '@chakra-ui/react';
+import { Box, Flex, Heading, Text, Spinner, Button } from '@chakra-ui/react';
 import { useContext, useEffect, useState, useRef } from 'react';
 import { useForm } from 'react-hook-form'
 import { UserRoleContext } from '@/contexts';
 import useSupabaseChannel from '@/utils/hooks/useSupabaseChannel';
 import useTransformSetups from '@/utils/hooks/useTransformSetups';
-import { fetchDocuments, createDocuments, updateDocuments, deleteDocuments } from '@/api/documents/documents';
+import { fetchDocument, createDocument, updateDocument, deleteDocument } from '@/api/documents/documents';
 import { fetchSetup } from '@/api/setups/setups';
 import DocsTable from '@/components/tables/DocsTable';
+import { storeFiles } from "@/utils/storage/storeFiles";
+
 
 export default function Auditor() {
   const { userRole } = useContext(UserRoleContext);
@@ -18,6 +20,7 @@ export default function Auditor() {
   const [ columns, setColumns ] = useState([])
   const webcamRef = useRef(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isLoadingFile, setIsLoadingFile] = useState({ fileId: "", loading: false });
 
 
   const {
@@ -76,11 +79,42 @@ export default function Auditor() {
 
   const { isSubscribed } = useSupabaseChannel(channels);
 
+  // Handle new document creation
+  const handleCreateDocument = async (data) => {
+    console.log("sending files");
+    try {
+      setIsLoadingFile({ fileId: data.id, loading: true });
+      const storeNewFiles = await storeFiles(data);
+      if (storeNewFiles) {
+        const storedFilePaths = storeNewFiles.filePaths;
+        const newDocument = await createDocument({
+          ...data,
+          documento: storedFilePaths.documentoPath,
+          foto: storedFilePaths.fotoPath
+        });
+        if (newDocument) {
+          setIsSubmitted(true);
+        } else {
+          throw new Error("Error creating document. Document creation aborted.");
+        }
+      } else {
+        console.error("Error storing files. Document creation aborted.");
+        
+        return setIsLoadingFile({ fileId: "", loading: false });;
+      }
+    } catch (error) {
+      console.error("Error creating document:", error);
+    } finally {
+      setIsLoadingFile({ fileId: "", loading: false });
+      setIsSubmitted(false);
+    }
+  };
+
 
   useEffect(() => {
     const fetchData = async () => {
         try {
-            const documentsData = await fetchDocuments()
+            const documentsData = await fetchDocument()
             const setupsData = await fetchSetup()
             let newColumns
             if (documentsData.data) {
@@ -96,7 +130,6 @@ export default function Auditor() {
             setColumns(newColumns);
         } catch (err) {
             console.error('Error fetching Documents:', err)
-            setError(err.message)
         }
       }
       fetchData()
@@ -128,7 +161,7 @@ export default function Auditor() {
   }, []);
 
 
-  if (!userRole) {
+  if (!userRole && !documents) {
     return <Flex justify="center" align="center" height="100vh"><Spinner size="xl" /></Flex>
   }
   
@@ -149,8 +182,8 @@ export default function Auditor() {
               data={transformedDocuments}
               documents={documents}
               setData={setDocuments}
-              editFunction={updateDocuments}
-              deleteFunction={deleteDocuments}
+              editFunction={updateDocument}
+              deleteFunction={deleteDocument}
               setupOptions={transformedSetups}
               columns={columns} 
               isDeleting={isDeleting}
@@ -160,7 +193,10 @@ export default function Auditor() {
               useFormHook={useForm}     
               webcamRef={webcamRef}
               isSubmitted={isSubmitted}
-              setIsSubmitted={setIsSubmitted}       
+              setIsSubmitted={setIsSubmitted}
+              isLoadingFile={isLoadingFile}
+              setIsLoadingFile={setIsLoadingFile}
+              onCreateDocument={handleCreateDocument}       
             />
         </Box>
       </Flex>

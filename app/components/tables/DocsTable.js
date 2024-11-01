@@ -1,6 +1,4 @@
 import { fetchFiles } from '@/api/documents/storage/storage'
-import storeFiles from "@/utils/storage/storeFiles"
-import { createDocument } from "@/api/documents/documents"
 import { useEffect, useState } from 'react';
 import moment from 'moment';
 import { DataTable } from 'primereact/datatable';
@@ -18,7 +16,7 @@ import { InputTextarea } from 'primereact/inputtextarea';
 import FileUploadField from "@/components/modal/FileUploadField";
 import CameraCapture from "@/components/modal/CameraCapture";
 
-const DocsTable = ({ columns, data, setData, title, hideColumn, isDeleting, setIsDeleting, isDate, editFunction, deleteFunction, useFormHook, webcamRef, isSubmitted, setIsSubmitted }) => {   
+const DocsTable = ({ columns, data, title, hideColumn, isDeleting, setIsDeleting, isDate, editFunction, deleteFunction, useFormHook, webcamRef, isSubmitted, setIsSubmitted, onCreateDocument, isLoadingFile, setIsLoadingFile }, ref) => {   
     const [filters, setFilters] = useState({
         global: { value: null, matchMode: FilterMatchMode.CONTAINS },
         ...columns?.reduce((acc, column) => (
@@ -27,7 +25,6 @@ const DocsTable = ({ columns, data, setData, title, hideColumn, isDeleting, setI
     })
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [ deletingId, setDeletingId ] = useState(null)
-    const [ isLoadingFile, setIsLoadingFile ] = useState({fileId:"", loading:false})
     const { register } = useFormHook()
 
     
@@ -79,6 +76,9 @@ const DocsTable = ({ columns, data, setData, title, hideColumn, isDeleting, setI
     const handleEdit = (rowData) => {
         const enabledFields = ["comentarios", "nombre", "documento", "foto"]
         const isColumn = (field) => rowData.field.includes(field)
+
+        const listOfDocs = rowData.field.includes("documento") ? rowData.value : []
+        
         
         return (
             isColumn("comentarios") ?
@@ -91,7 +91,8 @@ const DocsTable = ({ columns, data, setData, title, hideColumn, isDeleting, setI
             isColumn("documento") ? 
                 <FileUploadField 
                    {...register(rowData.field)} 
-                   register={register} 
+                   register={register}
+                   data={listOfDocs}
                    name={rowData.field}
                    className="w-[200px] p-5 p-inputtext-lg"  
                 /> :
@@ -140,13 +141,11 @@ const DocsTable = ({ columns, data, setData, title, hideColumn, isDeleting, setI
                     title={"Nuevo Documento"} 
                     fields={columns}
                     setupOptions={data}
-                    onSubmit={setData}
                     hideField={["id","created_at","last_change","setup_id","status"]}
                     isComment={["comentarios"]}
                     isLoading={isLoadingFile}
                     setIsLoading={setIsLoadingFile}
-                    storeFiles={storeFiles}
-                    createDocument={createDocument}
+                    onSubmit={onCreateDocument}
                     useFormHook={useFormHook}
                     webcamRef={webcamRef}
                     isSubmitted={isSubmitted}

@@ -52,7 +52,7 @@ const Login = () => {
             width={100}
             height={100}
             alt="Logo" 
-            priority={false}
+            priority
           />
         </Flex>
       </Heading>

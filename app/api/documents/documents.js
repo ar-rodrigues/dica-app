@@ -1,6 +1,6 @@
 import { deleteFiles } from "@/utils/storage/storeFiles";
 
-export async function fetchDocuments() {
+export async function fetchDocument() {
     const response = await fetch('/api/documents');
     
     if (!response.ok) {
@@ -10,7 +10,7 @@ export async function fetchDocuments() {
     return response.json();
   }
   
-  export async function deleteDocuments(id, filePaths) {
+  export async function deleteDocument(id, filePaths) {
     if (!id) return { error: 'Invalid input', status: 400 };
   
     try {
@@ -41,7 +41,7 @@ export async function fetchDocuments() {
   
   }
   
-  export async function updateDocuments(id, updatedDocuments) {
+  export async function updateDocument(id, updatedDocuments) {
     if(!id || !updatedDocuments) return { error: 'Invalid input', status: 400}
 
     const response = await fetch(`/api/documents/${id}`, {

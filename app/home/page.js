@@ -10,12 +10,12 @@ export default function Home() {
   const [ fullName, setFullName ] = useState('')
 
   useEffect(() => {
-    if (userRole) {
+    if (userRole.role) {
       setRole(userRole.role)
       setFullName(`${userRole.fullName}`)
     } 
     console.log(userRole)
-  },[userRole])
+  },[userRole.role])
 
 
   if (!userRole) {

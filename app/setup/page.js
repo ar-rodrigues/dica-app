@@ -61,7 +61,7 @@ export default function Setup() {
               return () => { setupChannel.unsubscribe() }
   }, [setups])
 
-  if (!userRole) {
+  if (!userRole && !setups) {
     return <Flex justify="center" align="center" h="100vh"><Spinner size="xl" /></Flex>
   }
   
@@ -78,7 +78,10 @@ export default function Setup() {
       <Flex direction="column" align="center" mt={8}>
         <Heading as="h2" size="xl" mb={4}>Setups</Heading>
         <Box w="100%" overflowX="auto" mb={8}>
-          <StandardTable 
+          { !setups && <Spinner size="xl" /> }
+          {
+            setups &&
+            <StandardTable 
                   data={setups} 
                   setData={setSetups}
                   columns={columns} 
@@ -89,7 +92,8 @@ export default function Setup() {
                   dataStructure={columns}
                   editFunction={updateSetup}
                   deleteFunction={deleteSetup}
-              />
+            />
+            }
         </Box>
       </Flex>
     </Box>
