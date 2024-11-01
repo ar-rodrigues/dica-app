@@ -16,18 +16,16 @@ import {
   Textarea, 
   Box
 } from "@chakra-ui/react";
-import { DevTool } from "@hookform/devtools";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, forwardRef } from "react";
 
 import FileUploadField from "./FileUploadField";
 import CameraCapture from "./CameraCapture";
 
 
-export default function FormModal({ isOpen, onClose, title, fields, setupOptions, hideField, isComment, setIsLoading, storeFiles, createDocument, useFormHook, webcamRef, isSubmitted, setIsSubmitted }) {
+const FormModal = forwardRef(({ isOpen, onClose, title, fields, setupOptions, hideField, isComment, setIsLoading, storeFiles, createDocument, useFormHook, isSubmitted, setIsSubmitted },webcamRef) => {
   const {
     register,
     handleSubmit,
-    control,
     watch,
     setValue,
     reset,
@@ -171,10 +169,11 @@ export default function FormModal({ isOpen, onClose, title, fields, setupOptions
               </Button>
             </Flex>
           </form>
-          <DevTool control={control} />
         </ModalBody>
       </ModalContent>
     </Modal>
   );
-}
+})
+
+export default FormModal
 

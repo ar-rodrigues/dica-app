@@ -2,9 +2,8 @@ import { useCallback, useState, forwardRef  } from "react";
 import Webcam from "react-webcam";
 import { 
   Button, Box, Image, Flex, 
-  Card, CardHeader, CardBody, CardFooter, 
-  Modal, ModalOverlay, ModalContent, ModalHeader, 
-  ModalFooter, ModalBody, ModalCloseButton,
+  Card, CardHeader, CardBody, 
+  Modal, ModalOverlay, ModalContent,
   useDisclosure,
 } from "@chakra-ui/react";
 import { FaCamera, FaTimes  } from "react-icons/fa";
