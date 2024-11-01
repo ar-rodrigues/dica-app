@@ -113,7 +113,7 @@ export async function POST(request) {
 
                     <p style="margin-top: 20px;">Por favor, confirma tu correo electrónico haciendo clic en el siguiente enlace:</p>
                     <p>
-                    <a href="${baseUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Confirmar correo</a>
+                    <a href="${baseUrl}/login" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Confirmar correo</a>
                     </p>
 
                     <hr style="border: 1px solid #ddd; margin-top: 30px;">
