@@ -27,14 +27,12 @@ const Sidebar = () => {
       try {
         const response = await checkUserRole()
         setUserRole(response)
-        console.log(response)
       } catch (error) {
         console.error('Error fetching user role:', error)
       }
     }
-    console.log(userRole)
     fetchRole()
-  },[userRole])
+  },[])
   
   // Use breakpoint value to set initial text visibility based on screen size.
   const initialTextVisible = useBreakpointValue({ base: false, md: true });
