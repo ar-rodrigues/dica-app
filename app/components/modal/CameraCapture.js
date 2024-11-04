@@ -90,7 +90,7 @@ const CameraCapture = forwardRef(({ register, name }, ref) => {
           ref={ref} 
           screenshotFormat="image/jpeg"
           videoConstraints={
-            { facingMode: "user" }
+            { facingMode: "environment" }
           } 
           />
         <Button variant='ghost' size={"lg"} onClick={capturePhoto} mt={5} ><TbCapture /></Button>

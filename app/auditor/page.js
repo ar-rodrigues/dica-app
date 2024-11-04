@@ -9,6 +9,10 @@ import { fetchDocument, createDocument, updateDocument, deleteDocument } from '@
 import { fetchSetup } from '@/api/setups/setups';
 import DocsTable from '@/components/tables/DocsTable';
 import { storeFiles } from "@/utils/storage/storeFiles";
+import { InputText } from 'primereact/inputtext';
+import { InputTextarea } from 'primereact/inputtextarea';
+import FileUploadField from "@/components/modal/FileUploadField";
+import CameraCapture from "@/components/modal/CameraCapture";
 
 
 export default function Auditor() {
@@ -110,6 +114,49 @@ export default function Auditor() {
     }
   };
 
+  // Handle document edits
+  const handleDocumentEdit = (rowData) => {
+    const enabledFields = ["comentarios", "nombre", "documento", "foto"]
+    const isColumn = (field) => rowData.field.includes(field)
+
+    const listOfDocs = rowData.field.includes("documento") ? rowData.value : []
+    
+    
+    return (
+        isColumn("comentarios") ?
+            <InputTextarea 
+                value={rowData.value || ""}
+                variant='filled'
+                onChange={(e) => rowData.editorCallback(e.target.value)}
+                className="p-2 pt-5"
+            /> : 
+        isColumn("documento") ? 
+            <FileUploadField 
+               {...register(rowData.field)} 
+               register={register}
+               data={listOfDocs}
+               name={rowData.field}
+               className="w-[200px] p-5 p-inputtext-lg"  
+            /> :
+        isColumn("foto") ?
+            <CameraCapture 
+                {...register(rowData.field)} 
+                ref={webcamRef} 
+                register={register} 
+                name={rowData.field} 
+                isSubmitted={isSubmitted} 
+                isModal={true}
+            /> :
+            <InputText 
+                disabled={!enabledFields.includes(rowData.field)} 
+                variant={!enabledFields.includes(rowData.field) ? "outlined" : "filled"}
+                className="py-5 pl-2 p-inputtext-lg" 
+                value={rowData.value || ""} 
+                onChange={ (e)=> rowData.editorCallback(e.target.value) }
+            />
+    )
+  }
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -196,7 +243,8 @@ export default function Auditor() {
               setIsSubmitted={setIsSubmitted}
               isLoadingFile={isLoadingFile}
               setIsLoadingFile={setIsLoadingFile}
-              onCreateDocument={handleCreateDocument}       
+              onCreateDocument={handleCreateDocument}
+              onDocumentEdit={handleDocumentEdit}       
             />
         </Box>
       </Flex>

@@ -7,7 +7,7 @@ import {
 import { FaCheckCircle, FaUpload, FaTimes  } from "react-icons/fa";
 
 const FileUploadField = forwardRef(({ register, name, data }, ref) => {
-    const [files, setFiles] = useState([]);
+    const [files, setFiles] = useState(data || []);
     const [fileNames, setFileNames] = useState(data || []);
     console.log(data)
     console.log(fileNames)

@@ -4,19 +4,13 @@ import moment from 'moment';
 import { DataTable } from 'primereact/datatable';
 import { FilterMatchMode } from 'primereact/api';
 import { Column } from 'primereact/column';
-import { Dropdown } from 'primereact/dropdown';
 import { Box, Text, Flex, Grid, Button, useDisclosure, Tag, Spinner  } from '@chakra-ui/react';
 import { MdDelete, MdInsertPhoto } from "react-icons/md";
 import { FaFilePdf } from "react-icons/fa";
-import { InputText } from 'primereact/inputtext';
 import FormModal from '@/components/modal/FormModal'
-import { InputTextarea } from 'primereact/inputtextarea';
 
 
-import FileUploadField from "@/components/modal/FileUploadField";
-import CameraCapture from "@/components/modal/CameraCapture";
-
-const DocsTable = ({ columns, data, title, hideColumn, isDeleting, setIsDeleting, isDate, editFunction, deleteFunction, useFormHook, webcamRef, isSubmitted, setIsSubmitted, onCreateDocument, isLoadingFile, setIsLoadingFile }, ref) => {   
+const DocsTable = ({ columns, data, title, hideColumn, isDeleting, setIsDeleting, isDate, editFunction, deleteFunction, useFormHook, webcamRef, isSubmitted, setIsSubmitted, onCreateDocument, isLoadingFile, setIsLoadingFile, onDocumentEdit }, ref) => {   
     const [filters, setFilters] = useState({
         global: { value: null, matchMode: FilterMatchMode.CONTAINS },
         ...columns?.reduce((acc, column) => (
@@ -31,7 +25,7 @@ const DocsTable = ({ columns, data, title, hideColumn, isDeleting, setIsDeleting
     const dateBodyTemplate = (rowData) => {
         const dateField = isDate.find(field => rowData[field]);
         const formatedDate = moment(rowData[dateField]).format('DD/MM/YY HH:mm')
-        return dateField ? <Tag>{formatedDate}</Tag> : null; 
+        return dateField ? <Tag fontSize={"0.5rem"}>{formatedDate}</Tag> : null; 
       };
 
     const fileBodyTemplate = (rowData, field) => {
@@ -73,47 +67,7 @@ const DocsTable = ({ columns, data, title, hideColumn, isDeleting, setIsDeleting
         )
       };
 
-    const handleEdit = (rowData) => {
-        const enabledFields = ["comentarios", "nombre", "documento", "foto"]
-        const isColumn = (field) => rowData.field.includes(field)
-
-        const listOfDocs = rowData.field.includes("documento") ? rowData.value : []
-        
-        
-        return (
-            isColumn("comentarios") ?
-                <InputTextarea 
-                    value={rowData.value || ""}
-                    variant='filled'
-                    onChange={(e) => rowData.editorCallback(e.target.value)}
-                    className="p-2 pt-5"
-                /> : 
-            isColumn("documento") ? 
-                <FileUploadField 
-                   {...register(rowData.field)} 
-                   register={register}
-                   data={listOfDocs}
-                   name={rowData.field}
-                   className="w-[200px] p-5 p-inputtext-lg"  
-                /> :
-            isColumn("foto") ?
-                <CameraCapture 
-                    {...register(rowData.field)} 
-                    ref={webcamRef} 
-                    register={register} 
-                    name={rowData.field} 
-                    isSubmitted={isSubmitted} 
-                    isModal={true}
-                /> :
-                <InputText 
-                    disabled={!enabledFields.includes(rowData.field)} 
-                    variant={!enabledFields.includes(rowData.field) ? "outlined" : "filled"}
-                    className="py-5 pl-2 p-inputtext-lg" 
-                    value={rowData.value || ""} 
-                    onChange={ (e)=> rowData.editorCallback(e.target.value) }
-                />
-        )
-    }
+    
 
     
     useEffect(() => {
@@ -125,7 +79,7 @@ const DocsTable = ({ columns, data, title, hideColumn, isDeleting, setIsDeleting
 
 
   return (
-      <Box w="100%" h="100%" p={4}   >
+      <Box w="100%" h="100%" p={4} >
           <Grid gridRow={2} gridColumn={2} gridTemplateColumns={{ base: '1fr', md: '1fr 1fr' }} gap={4} m={10} >
           
               <Flex flexDir={'column'} align="flex-start" justify="space-between" mb={4} >
@@ -154,24 +108,24 @@ const DocsTable = ({ columns, data, title, hideColumn, isDeleting, setIsDeleting
 
           </Grid>
 
-          <Flex flexDir={"column"} >
+          <Box w={"100%"} minW={"fit-content"} >
            {
             data?.map(({ unidad, anexos})=>{
                 return (
                     <Flex flexDir={"column"} key={unidad} bg={"gray.100"} pb={6} m={4} >
-                        <Text fontSize="xl" fontWeight="bold" bg={"gray.300"} p={4} >{unidad}</Text>
-                        <Box   >
+                        <Text fontSize="sm" fontWeight="bold" bg={"gray.300"} p={4} >{unidad}</Text>
+                        <Box w={"100%"} overflow={"auto"}>
                             {
                                 anexos?.map(({anexo, documents})=>{
                                     return (
                                         <Flex flexDir={"column"} key={anexo} >
-                                            <Text fontSize="lg" fontWeight="bold" mb={4} bg={"gray.200"} pl={4} py={4} >{anexo}</Text>
-                                            <Box p={4}   >
+                                            <Text fontSize="sm" fontWeight="bold" mb={4} bg={"gray.200"} pl={4} py={4} >{anexo}</Text>
+                                            <Box w={"100%"} p={4} overflow={"auto"} className="card p-fluid"  >
                                                 {
                                                     documents.length > 0 && (
                                                         <DataTable
                                                             value={documents}
-                                                            tableStyle={{ minWidth: '50rem' }}
+                                                            tableStyle={{ minWidth: '700px', fontSize: "0.2rem" }}
                                                             loading={!documents && documents.length > 0}
                                                             paginator
                                                             rows={10}
@@ -191,10 +145,10 @@ const DocsTable = ({ columns, data, title, hideColumn, isDeleting, setIsDeleting
                                                                                    field={field}
                                                                                    header={header}
                                                                                    style={
-                                                                                    { fontSize: "0.875rem" }
+                                                                                    { fontSize: "0.6rem" }
                                                                                    }
                                                                                    body={ (rowData) => fileBodyTemplate(rowData, field) }
-                                                                                   editor={(rowData)=>handleEdit(rowData)}
+                                                                                   editor={(rowData)=>onDocumentEdit(rowData)}
                                                                                 />
                                                                             ) : !hideColumn?.includes(field) && (
                                                                             <Column 
@@ -205,10 +159,10 @@ const DocsTable = ({ columns, data, title, hideColumn, isDeleting, setIsDeleting
                                                                                 showFilterMatchModes={false}
                                                                                 filterPlaceholder={`Buscar por ${header.toLowerCase()}...`} 
                                                                                 body={isDate?.includes(field) ? dateBodyTemplate : undefined}
-                                                                                editor={(rowData)=>handleEdit(rowData)}
+                                                                                editor={(rowData)=>onDocumentEdit(rowData)}
                                                                                 style={{ 
-                                                                                    fontSize: "0.875rem",
-                                                                                    minWidth: '200px'
+                                                                                    fontSize: "0.6rem",
+                                                                                    minWidth: '100px'
                                                                                 }}
                                                                             />
                                                                             )
@@ -218,6 +172,9 @@ const DocsTable = ({ columns, data, title, hideColumn, isDeleting, setIsDeleting
                                                                 { editFunction && 
                                                                     <Column 
                                                                         header="Editar" 
+                                                                        style={
+                                                                            { fontSize: "0.6rem" }
+                                                                           }
                                                                         frozen 
                                                                         alignFrozen="right"
                                                                         rowEditor
@@ -225,7 +182,10 @@ const DocsTable = ({ columns, data, title, hideColumn, isDeleting, setIsDeleting
                                                                     }
                                                                 { deleteFunction && 
                                                                     <Column 
-                                                                    header="Eliminar" 
+                                                                    header="Eliminar"
+                                                                    style={
+                                                                        { fontSize: "0.6rem" }
+                                                                       } 
                                                                     frozen
                                                                     alignFrozen="right"
                                                                     body={ (rowData) => (
@@ -239,7 +199,7 @@ const DocsTable = ({ columns, data, title, hideColumn, isDeleting, setIsDeleting
                                                                     />
                                                                 }
                                                         </DataTable>
-                                                    ) || <Text fontSize="lg" fontWeight="bold" mb={4} >No hay documentos</Text>
+                                                    ) || <Text fontSize="sm" mb={4} >No hay documentos</Text>
                                                 }
                                             </Box>
                                         </Flex>
@@ -252,7 +212,7 @@ const DocsTable = ({ columns, data, title, hideColumn, isDeleting, setIsDeleting
             })
            }
 
-          </Flex>        
+          </Box>        
           
       </Box>
   );
