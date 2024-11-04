@@ -86,7 +86,13 @@ const CameraCapture = forwardRef(({ register, name }, ref) => {
   const CameraContent = (
     <>
       <CardBody textAlign={"center"} placeItems={"center"}>
-        <Webcam ref={ref} screenshotFormat="image/jpeg" />
+        <Webcam 
+          ref={ref} 
+          screenshotFormat="image/jpeg"
+          videoConstraints={
+            { facingMode: "user" }
+          } 
+          />
         <Button variant='ghost' size={"lg"} onClick={capturePhoto} mt={5} ><TbCapture /></Button>
       </CardBody>
     </>
