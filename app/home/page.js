@@ -1,24 +1,27 @@
 'use client'
 import { Box, Flex, Heading, Text, Spinner } from '@chakra-ui/react';
-import { useContext, useEffect, useState } from 'react';
-import { UserRoleContext } from '@/contexts';
+import { useEffect, useState } from 'react';
+import { checkUserRole } from '@/login/actions'
 import Image from 'next/image';
 import Logo from '@/public/GOB_VER_Escudo.png'
 export default function Home() {
-  const { userRole } = useContext(UserRoleContext);
-  const [ role, setRole ] = useState({})
-  const [ fullName, setFullName ] = useState('')
+  const [ role, setRole ] = useState()
 
   useEffect(() => {
-    if (userRole.role) {
-      setRole(userRole.role)
-      setFullName(`${userRole.fullName}`)
-    } 
-    console.log(userRole)
-  },[userRole.role])
+    const fetchRole = async () => {
+      try {
+        const response = await checkUserRole()
+        setRole(response)
+        console.log(response)
+      } catch (error) {
+        console.error('Error fetching user role:', error)
+      }
+    }
+    fetchRole()
+  },[])
 
 
-  if (!userRole) {
+  if (!role) {
     return <Flex justify="center" align="center" height="100vh"><Spinner size="xl" /></Flex>
   }
   
@@ -28,7 +31,7 @@ export default function Home() {
         <Heading as="h1" size="2xl" mb={4}>
           <Flex align="center" justify="center" height="100vh" direction="column" gap={4}>
             <Text fontSize="3xl" fontWeight="bold" mb={4} color="teal.500" textAlign="center">
-              Hola, {fullName}!
+              Hola, {role?.fullName}!
             </Text>
             <Image 
             src={Logo} 

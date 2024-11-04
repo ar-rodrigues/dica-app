@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { login } from './actions';
+import { login, checkUserRole } from './actions';
 import { Input, Button, Box, Heading, InputGroup, InputRightElement, IconButton, Text, Spinner, Flex } from '@chakra-ui/react';
 import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
 import Image from 'next/image';
@@ -27,8 +27,8 @@ const Login = () => {
       if (!result.success) {
         setError('Credenciales incorrectas. Intente otra vez.');
       } else {
-        // Redirect to home page on successful login
-        router.push('/home');
+        const userRole = await checkUserRole()
+        if(userRole.role) router.push('/home');
       }
     } catch (error) {
       setError('An unexpected error occurred. Please try again.');

@@ -3,10 +3,9 @@
 // Imports necessary modules for React components, routing, context management, and styling.
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { useContext } from 'react';
+import { checkUserRole } from '@/login/actions';
 
 import { Box, VStack, Button, useBreakpointValue, Text } from '@chakra-ui/react';
-import { UserRoleContext } from '@/contexts';
 import LogoutButton from '@/components/logout/LogoutButton';
 import SidebarLink from './SidebarLink';
 // Import icons for sidebar navigation.
@@ -17,12 +16,26 @@ import { GoSidebarExpand, GoSidebarCollapse  } from "react-icons/go";
 
 // Define the Sidebar component
 const Sidebar = () => {
+  const [ userRole, setUserRole] = useState()
+  const { role, fullName, isAdmin } = userRole || {}
   // Get the current pathname for active link highlighting.
   const pathname = usePathname();
-  // Access user role from the context.
-  const { userRole } = useContext(UserRoleContext);
-  const { fullName, role, email, isAdmin } = userRole || {}   // Destructure user role information.
- 
+
+  // Use the checkUserRole function to determine the user's role and set it in the state.
+  useEffect(() => {
+    const fetchRole = async () => {
+      try {
+        const response = await checkUserRole()
+        setUserRole(response)
+        console.log(response)
+      } catch (error) {
+        console.error('Error fetching user role:', error)
+      }
+    }
+    console.log(userRole)
+    fetchRole()
+  },[userRole])
+  
   // Use breakpoint value to set initial text visibility based on screen size.
   const initialTextVisible = useBreakpointValue({ base: false, md: true });
   // State to manage text visibility for sidebar links.
@@ -41,7 +54,7 @@ const Sidebar = () => {
   // Define an array of links for sidebar navigation.
   // Each link object contains information about the href, text, icon, and roles that can access it.
   const links = [
-    { href: '/', text: 'Panel', icon: MdDataThresholding , roles: ['admin', 'auditor'] },
+    { href: '/home', text: 'Panel', icon: MdDataThresholding , roles: ['admin', 'auditor'] },
     { href: '/setup', text: 'Setup', icon: MdOutlinePhonelinkSetup, roles: ['admin'] },
     { href: '/users', text: 'Usuários', icon: FiUsers, roles: ['admin'] },
     { href: '/auditor', text: 'Auditor', icon: AiOutlineAudit, roles: ['admin', 'auditor'] },

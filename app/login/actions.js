@@ -72,5 +72,5 @@ export async function checkUserRole() {
     } 
   }
 
-  return null; // User not found or no role assigned
+  return { userId: null, fullName: null, email: null, role: null, isAdmin: null }; // User not found or no role assigned
 }
