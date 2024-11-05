@@ -27,8 +27,12 @@ export async function storeFiles({documento, foto, nombre, unidad_adm, filePath=
         // Upload document if it's a file
         if (documento && documento.length > 0) {
             for (let file of documento) {
-                const newDocumentPath = await uploadFile('audits', unidad_adm, nombre, file, isUpdate, filePath);
-                filePaths.documentoPath.push(newDocumentPath);
+                // check if file is object
+                console.log("type of file:", typeof file)
+                if(typeof file === 'object'){
+                    const newDocumentPath = await uploadFile('audits', unidad_adm, nombre, file, isUpdate, filePath);
+                    filePaths.documentoPath.push(newDocumentPath);
+                }
             }
         }
 

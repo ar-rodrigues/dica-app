@@ -51,13 +51,10 @@ const FormModal = forwardRef(({ isOpen, onClose, title, fields, setupOptions, hi
 
   
   useEffect(() => {
-    if (isSubmitted) {
-      reset(); 
-    } else if(!isOpen){
-        reset();
-        onClose()
+    if(isSubmitting){
+      onClose()
     }
-  }, [isSubmitted, isOpen]);
+  }, [isSubmitting, reset, onClose])
 
 
   return (
@@ -120,7 +117,7 @@ const FormModal = forwardRef(({ isOpen, onClose, title, fields, setupOptions, hi
                               isModal={true} 
                             /> :
                             <Input 
-                              disabled={field === "entrante" || field === "saliente" || field === "responsable"} 
+                              disabled={field === "entrante" || field === "saliente" || field === "responsable" || isSubmitted || isSubmitting} 
                               {...register(field)} 
                             />
                     }
