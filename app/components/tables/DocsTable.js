@@ -10,7 +10,7 @@ import { FaFilePdf } from "react-icons/fa";
 import FormModal from '@/components/modal/FormModal'
 
 
-const DocsTable = ({ columns, data, title, hideColumn, isDeleting, setIsDeleting, isDate, editFunction, deleteFunction, useFormHook, webcamRef, isSubmitted, setIsSubmitted, onCreateDocument, isLoadingFile, setIsLoadingFile, onDocumentEdit }, ref) => {   
+const DocsTable = ({ columns, data, title, hideColumn, isDeleting, setIsDeleting, isDate, editFunction, deleteFunction, useFormHook, webcamRef, fileInputRef, isSubmitted, setIsSubmitted, onCreateDocument, isLoadingFile, setIsLoadingFile, onDocumentEdit,onRowEditComplete }, ref) => {   
     const [filters, setFilters] = useState({
         global: { value: null, matchMode: FilterMatchMode.CONTAINS },
         ...columns?.reduce((acc, column) => (
@@ -102,13 +102,14 @@ const DocsTable = ({ columns, data, title, hideColumn, isDeleting, setIsDeleting
                     onSubmit={onCreateDocument}
                     useFormHook={useFormHook}
                     webcamRef={webcamRef}
+                    fileInputRef={fileInputRef}
                     isSubmitted={isSubmitted}
                     setIsSubmitted={setIsSubmitted}
                 />
 
           </Grid>
 
-          <Box w={"100%"} minW={"fit-content"} >
+          <Box w={"100%"} overflowX="auto" minW={"fit-content"} >
            {
             data?.map(({ unidad, anexos})=>{
                 return (
@@ -133,7 +134,7 @@ const DocsTable = ({ columns, data, title, hideColumn, isDeleting, setIsDeleting
                                                             scrollable
                                                             removableSort
                                                             editMode='row'
-                                                            onRowEditComplete={(rowData)=>(console.log("onRowEditComplete:",rowData))}
+                                                            onRowEditComplete={onRowEditComplete}
                                                             >
                                                                 {
                                                                     columns?.map(({field, header}, index) =>{

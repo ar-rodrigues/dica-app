@@ -1,28 +1,30 @@
-import { useCallback, useState, forwardRef  } from "react";
-import { 
-    Input, Box, Text, List, ListItem, 
-    ListIcon, FormLabel, FormControl, 
-    InputGroup, InputLeftElement, Button 
-    } from "@chakra-ui/react";
-import { FaCheckCircle, FaUpload, FaTimes  } from "react-icons/fa";
+import { useCallback, useState, forwardRef } from "react";
 
-const FileUploadField = forwardRef(({ register, name, data }, ref) => {
-    const [files, setFiles] = useState(data || []);
-    const [fileNames, setFileNames] = useState(data || []);
-    
+import {
+    Input, Box, Text, List, ListItem,
+    ListIcon, FormLabel, FormControl,
+    InputGroup, InputLeftElement, Button
+} from "@chakra-ui/react";
+import { FaCheckCircle, FaUpload, FaTimes } from "react-icons/fa";
 
-    const handleFileChange = useCallback((e) => {
-        const selectedFiles = Array.from(e.target.files);
-        setFiles((prevFiles) => [...prevFiles, ...selectedFiles]); 
-        setFileNames((prevFileNames) => [...prevFileNames, ...selectedFiles.map(file => `${file.name}`)]); // update the file names
-        register(name).onChange({ target: { name, value: selectedFiles } });
-      }, [register, name]);
+const FileUploadField = forwardRef(({ register, name, rowData, isEditing = false }, ref) => {
+    const [files, setFiles] = useState(rowData?.value || []);
+
+    const handleFileChange = useCallback(() => {
+        const selectedFiles = Array.from(ref.current.files);
+        setFiles((prevFiles) => {
+            const updatedFiles = [...prevFiles, ...selectedFiles];
+            rowData?.editorCallback(updatedFiles);
+            register(name).onChange({ target: { name, value: updatedFiles } });
+            return updatedFiles;
+        });
+    }, [register, name, rowData]);
 
     const handleRemoveFile = (index) => {
-        setFiles(files.filter((_, i) => i !== index))
-        setFileNames(fileNames.filter((_, i) => i !== index))
-        register(name).onChange({ target: { name, value: files.filter((_, i) => i !== index) } })
-    }
+        const updatedFiles = files.filter((_, i) => i !== index);
+        setFiles(updatedFiles);
+        register(name).onChange({ target: { name, value: updatedFiles } });
+    };
 
     return (
         <Box>
@@ -34,6 +36,7 @@ const FileUploadField = forwardRef(({ register, name, data }, ref) => {
                 <Input
                     type="file"
                     name={name}
+                    ref={ref}
                     onChange={handleFileChange}
                     multiple
                     width='auto'
@@ -45,15 +48,15 @@ const FileUploadField = forwardRef(({ register, name, data }, ref) => {
                     size='20px'
                 />
             </FormControl>
-            {fileNames.length > 0 && (
+            {files.length > 0 && (
                 <Box mt={2}>
                     <Text fontWeight="bold">Archivos seleccionados:</Text>
-                    <List mt={1} spacing={2} >
-                        {fileNames.map((fileName, index) => (
+                    <List mt={1} spacing={2}>
+                        {files.map((file, index) => (
                             <ListItem key={index}>
                                 <ListIcon as={FaCheckCircle} color='green.500' />
-                                <Text fontSize={"xs"} noOfLines={[1,2]} >{fileName}</Text>
-                                <Button onClick={() => handleRemoveFile(index)} size="10px" variant='outline' colorScheme="red" ml={4} >
+                                <Text fontSize={"xs"} noOfLines={[1, 2]}>{file.name || file}</Text>
+                                <Button onClick={() => handleRemoveFile(index)} size="10px" variant='outline' colorScheme="red" ml={4}>
                                     <FaTimes />
                                 </Button>
                             </ListItem>

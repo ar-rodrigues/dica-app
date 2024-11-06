@@ -42,21 +42,32 @@ export async function fetchDocument() {
   }
   
   export async function updateDocument(id, updatedDocuments) {
-    if(!id || !updatedDocuments) return { error: 'Invalid input', status: 400}
+  if (!id || !updatedDocuments) return { error: 'Invalid input', status: 400 }
 
+    console.log("document received on document function")
+    console.log("update document id", id)
+    console.log("update document", updatedDocuments)
+
+  try {
     const response = await fetch(`/api/documents/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(updatedDocument),
+      body: JSON.stringify(updatedDocuments),
     });
+
     if (!response.ok) {
         console.log('Failed to update documents');
         return response.json({ error: 'Failed to update documents', status: response.status })
     }
+
     return response.json();
+  } catch (error) {
+    console.error('Error updating document:', error)
+    return { error: 'Failed to update documents', status: 500 }
   }
+}
   
   export async function createDocument(newDocument) {
     try {      

@@ -11,9 +11,9 @@ import { TbCapture } from "react-icons/tb";
 import { v4 as uuidv4 } from "uuid"
 
 
-const CameraCapture = forwardRef(({ register, name }, ref) => {
+const CameraCapture = forwardRef(({ register, name, rowData, isEditing=false }, ref) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [photos, setPhotos] = useState([]);
+  const [photos, setPhotos] = useState(rowData?.value || []);
   const { isOpen:isModalOpen, onOpen, onClose } = useDisclosure()
 
   const capturePhoto = useCallback(() => {
@@ -29,6 +29,7 @@ const CameraCapture = forwardRef(({ register, name }, ref) => {
           const newPhoto = { dataURL: imageSrc, file }; // Keep both dataURL for display and File for upload
           setPhotos((prevPhotos) => {
             const updatedPhotos = [...prevPhotos, newPhoto];
+            rowData?.editorCallback([...prevPhotos, newPhoto.file])
             // Register photos with the form
             register(name).onChange({ target: { name, value: updatedPhotos.map(photo => photo.file) } });
             return updatedPhotos;
@@ -39,7 +40,7 @@ const CameraCapture = forwardRef(({ register, name }, ref) => {
       setIsOpen(false)
       onClose()
     }
-  }, [ register, name, onClose ]);
+  }, [ register, name, onClose, rowData ]);
 
   const handleRemovePhoto = useCallback((index) => {
     setPhotos((prevPhotos) => prevPhotos.filter((_, i) => i !== index));

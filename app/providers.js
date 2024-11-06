@@ -7,7 +7,6 @@ export function Providers({ children }) {
   const [userRole, setUserRole] = useState(null)
 
   useEffect(() => {
-    console.log("provider",userRole)
     if (!userRole) {
       checkUserRole().then(role => setUserRole(role));
     }

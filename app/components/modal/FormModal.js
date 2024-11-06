@@ -22,7 +22,7 @@ import FileUploadField from "./FileUploadField";
 import CameraCapture from "./CameraCapture";
 
 
-const FormModal = forwardRef(({ isOpen, onClose, title, fields, setupOptions, hideField, isComment,webcamRef, useFormHook, isSubmitted, setIsSubmitted, onSubmit },ref) => {
+const FormModal = forwardRef(({ isOpen, onClose, title, fields, setupOptions, hideField, isComment,webcamRef, fileInputRef, useFormHook, isSubmitted, setIsSubmitted, onSubmit },ref) => {
   const {
     register,
     handleSubmit,
@@ -53,8 +53,11 @@ const FormModal = forwardRef(({ isOpen, onClose, title, fields, setupOptions, hi
   useEffect(() => {
     if(isSubmitting){
       onClose()
+    } else if (isSubmitted) {
+      reset()
     }
-  }, [isSubmitting, reset, onClose])
+  }, [isSubmitting, reset, onClose, isSubmitted])
+  
 
 
   return (
@@ -102,7 +105,8 @@ const FormModal = forwardRef(({ isOpen, onClose, title, fields, setupOptions, hi
                             </Select> :
                         field === "documento" ?
                             <FileUploadField 
-                              label="Capture" {...register(field)} 
+                              label="documentos" {...register(field)}
+                              ref={fileInputRef}
                               register={register} 
                               name={field} 
                               isSubmitted={isSubmitted}  

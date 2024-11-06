@@ -23,19 +23,15 @@ export default function Auditor() {
   const [ isDeleting, setIsDeleting ] = useState(false)
   const [ columns, setColumns ] = useState([])
   const webcamRef = useRef(null);
+  const fileInputRef = useRef(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoadingFile, setIsLoadingFile] = useState({ fileId: "", loading: false });
 
 
   const {
     register,
-    handleSubmit,
-    control,
-    watch,
-    setValue,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm({ defaultValues: { status: "Pendiente" }});
-
 
   const channels = [
     { 
@@ -88,6 +84,7 @@ export default function Auditor() {
     console.log("sending files");
     try {
       setIsLoadingFile({ fileId: data.id, loading: true });
+      setIsSubmitted(true);
       const storeNewFiles = await storeFiles(data);
       if (storeNewFiles) {
         const storedFilePaths = storeNewFiles.filePaths;
@@ -97,7 +94,7 @@ export default function Auditor() {
           foto: storedFilePaths.fotoPath
         });
         if (newDocument) {
-          setIsSubmitted(true);
+          setDocuments(prev => [...prev, newDocument]);
         } else {
           throw new Error("Error creating document. Document creation aborted.");
         }
@@ -118,43 +115,80 @@ export default function Auditor() {
   const handleDocumentEdit = (rowData) => {
     const enabledFields = ["comentarios", "nombre", "documento", "foto"]
     const isColumn = (field) => rowData.field.includes(field)
-
+  
     const listOfDocs = rowData.field.includes("documento") ? rowData.value : []
-    
-    
     return (
         isColumn("comentarios") ?
-            <InputTextarea 
+            <InputTextarea
                 value={rowData.value || ""}
                 variant='filled'
                 onChange={(e) => rowData.editorCallback(e.target.value)}
                 className="p-2 pt-5"
-            /> : 
-        isColumn("documento") ? 
-            <FileUploadField 
-               {...register(rowData.field)} 
-               register={register}
-               data={listOfDocs}
-               name={rowData.field}
-               className="w-[200px] p-5 p-inputtext-lg"  
+            /> :
+        isColumn("documento") ?
+            <FileUploadField
+                {...register(`${rowData.field}`)}
+                register={register }
+                ref={fileInputRef}
+                label="documentos"
+                name={rowData.field}
+                rowData={rowData}
+                isEditing={true}
+                className="w-[200px] p-5 p-inputtext-lg"
             /> :
         isColumn("foto") ?
-            <CameraCapture 
-                {...register(rowData.field)} 
-                ref={webcamRef} 
-                register={register} 
-                name={rowData.field} 
-                isSubmitted={isSubmitted} 
-                isModal={true}
+            <CameraCapture
+                {...register(rowData.field)}
+                ref={webcamRef}
+                register={register}
+                name={rowData.field}
+                rowData={rowData}
+                isEditing={true}
             /> :
-            <InputText 
-                disabled={!enabledFields.includes(rowData.field)} 
+            <InputText
+                disabled={!enabledFields.includes(rowData.field)}
                 variant={!enabledFields.includes(rowData.field) ? "outlined" : "filled"}
-                className="py-5 pl-2 p-inputtext-lg" 
-                value={rowData.value || ""} 
-                onChange={ (e)=> rowData.editorCallback(e.target.value) }
+                className="py-5 pl-2 p-inputtext-lg"
+                value={rowData.value || ""}
+                onChange={ ((e)=> rowData.editorCallback(e.target.value)) }
             />
     )
+  }
+
+  const handleRowEditComplete = async (rowData) => {
+    
+    try {
+      console.log("updating document")
+      const newDocs = rowData.newData.documento
+      const newFotos = rowData.newData.foto
+      const docId = rowData.newData.id
+      const updatedDocument = { ...rowData.newData, last_change: new Date().toISOString(), documento: newDocs, foto: newFotos };
+      setIsLoadingFile({ fileId: docId, loading: true });
+      setIsSubmitted(true);
+      const storeFilesUpdate = await storeFiles(updatedDocument)
+      if(storeFilesUpdate){
+        const storedUpdatePaths = storeFilesUpdate.filePaths
+        console.log("updated paths", storedUpdatePaths)
+        const newUpdateDocument = await updateDocument(docId, { 
+            ...updatedDocument, 
+            documento: storedUpdatePaths.documentoPath, 
+            foto: storedUpdatePaths.fotoPath 
+          })
+          if(newUpdateDocument){
+            setDocuments(prev => [...prev, newUpdateDocument])
+          } else {
+            throw new Error("Error updating document")
+          }
+      } else {
+        console.error("Error storing file updates:")
+        return setIsLoadingFile({fileId: "", loading: false})
+      }
+    } catch (error) {
+      console.error("Error updating document:", error)
+    } finally {
+      setIsLoadingFile({fileId: "", loading: false})
+      setIsSubmitted(false)
+    }
   }
 
 
@@ -208,7 +242,7 @@ export default function Auditor() {
   }, []);
 
 
-  if (!userRole && !documents) {
+  if (!userRole || !documents) {
     return <Flex justify="center" align="center" height="100vh"><Spinner size="xl" /></Flex>
   }
   
@@ -224,7 +258,8 @@ export default function Auditor() {
       </Flex>
       <Flex direction="column" align="center" mt={8}>
         <Heading as="h2" size="xl" mb={4}>Auditor</Heading>
-        <Box w="100%" overflowX="auto" mb={8}>
+        <Flex w="100%" overflowX="auto" mb={8} flexDir={"column"} alignItems={"center"} >
+          { isSubmitted && <Spinner size={"md"} />}
           <DocsTable 
               data={transformedDocuments}
               documents={documents}
@@ -239,14 +274,16 @@ export default function Auditor() {
               hideColumn={["id","created_at","setup_id","unidad_adm","entrante","saliente"]} 
               useFormHook={useForm}     
               webcamRef={webcamRef}
+              fileInputRef={fileInputRef}
               isSubmitted={isSubmitted}
               setIsSubmitted={setIsSubmitted}
               isLoadingFile={isLoadingFile}
               setIsLoadingFile={setIsLoadingFile}
               onCreateDocument={handleCreateDocument}
-              onDocumentEdit={handleDocumentEdit}       
+              onDocumentEdit={handleDocumentEdit}
+              onRowEditComplete={handleRowEditComplete}       
             />
-        </Box>
+        </Flex>
       </Flex>
     </Box>
   );

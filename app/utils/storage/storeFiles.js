@@ -5,8 +5,13 @@ import slugify from 'slugify';
 
 export async function storeFiles({documento, foto, nombre, unidad_adm, filePath=null, isUpdate = false}) {
     const supabase = createClient();
+
+    // separate strings from objects in documento and foto
+    const documentoString = documento?.filter(file => typeof file === 'string')
+
+    const fotoString = foto?.filter(file => typeof file === 'string')
     
-    const filePaths = {documentoPath:[],fotoPath:[]} // Initialize filePaths object
+    const filePaths = {documentoPath:[...documentoString],fotoPath:[...fotoString]} // Initialize filePaths object
 
     if (!(nombre && unidad_adm) && !isUpdate) return { error: "Missing required fields" }
 
@@ -14,6 +19,7 @@ export async function storeFiles({documento, foto, nombre, unidad_adm, filePath=
     nombre = slugify(nombre)
     unidad_adm = slugify(unidad_adm)
 
+    // Function to upload a files
     const uploadFile = async (folder, subFolder, fileName, file, isUpdate, filePath, filePaths) => {
         const { data: uploadDoc, error } = await supabase
            .storage
@@ -28,7 +34,6 @@ export async function storeFiles({documento, foto, nombre, unidad_adm, filePath=
         if (documento && documento.length > 0) {
             for (let file of documento) {
                 // check if file is object
-                console.log("type of file:", typeof file)
                 if(typeof file === 'object'){
                     const newDocumentPath = await uploadFile('audits', unidad_adm, nombre, file, isUpdate, filePath);
                     filePaths.documentoPath.push(newDocumentPath);
@@ -39,8 +44,10 @@ export async function storeFiles({documento, foto, nombre, unidad_adm, filePath=
         // Upload photo if it's a File object
         if (foto && foto.length > 0) {
             for (let file of foto) {
-                const newPhotoPath = await uploadFile('audits', unidad_adm, nombre, file, isUpdate, filePath);
-                filePaths.fotoPath.push(newPhotoPath);
+                if(typeof file === 'object') {
+                    const newPhotoPath = await uploadFile('audits', unidad_adm, nombre, file, isUpdate, filePath);
+                    filePaths.fotoPath.push(newPhotoPath);
+                }
             }
         }
 
