@@ -88,6 +88,7 @@ export default function Auditor() {
       const storeNewFiles = await storeFiles(data);
       if (storeNewFiles) {
         const storedFilePaths = storeNewFiles.filePaths;
+        console.log("Creating document")
         const newDocument = await createDocument({
           ...data,
           documento: storedFilePaths.documentoPath,
@@ -96,6 +97,7 @@ export default function Auditor() {
         if (newDocument) {
           setDocuments(prev => [...prev, newDocument]);
         } else {
+          console.log("Error creating document")
           throw new Error("Error creating document. Document creation aborted.");
         }
       } else {
@@ -162,7 +164,7 @@ export default function Auditor() {
       const newDocs = rowData.newData.documento
       const newFotos = rowData.newData.foto
       const docId = rowData.newData.id
-      const updatedDocument = { ...rowData.newData, last_change: new Date().toISOString(), documento: newDocs, foto: newFotos };
+      const updatedDocument = { ...rowData.newData, last_change: new Date(), documento: newDocs, foto: newFotos };
       setIsLoadingFile({ fileId: docId, loading: true });
       setIsSubmitted(true);
       const storeFilesUpdate = await storeFiles(updatedDocument)

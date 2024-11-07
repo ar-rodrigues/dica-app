@@ -42,6 +42,7 @@ const CameraCapture = forwardRef(({ register, name, rowData, isEditing=false }, 
     }
   }, [ register, name, onClose, rowData ]);
 
+
   const handleRemovePhoto = useCallback((index) => {
     setPhotos((prevPhotos) => prevPhotos.filter((_, i) => i !== index));
     register(name).onChange({ target: { name, value: '' } });
