@@ -40,6 +40,7 @@ export async function PUT(request, { params }) {
     const id = params.id
     const updateData = await request.json()
     console.log("update received on route")
+    console.log("UpdateData", updateData)
 
     try {
         const { data, error } = await supabase

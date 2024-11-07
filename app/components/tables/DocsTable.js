@@ -79,16 +79,17 @@ const DocsTable = ({ columns, data, title, hideColumn, isDeleting, setIsDeleting
 
 
   return (
-      <Box w="100%" h="100%" p={4} >
-          <Grid gridRow={2} gridColumn={2} gridTemplateColumns={{ base: '1fr', md: '1fr 1fr' }} gap={4} m={10} >
+      <Box w="100%" h="100%" p={4} mt={10} >
+          <Grid gridTemplateColumns={{ base: '1fr', md: '1fr 1fr 1fr' }} gap={4} >
           
-              <Flex flexDir={'column'} align="flex-start" justify="space-between" mb={4} >
+              <Flex align="flex-start" justify="space-between" mb={4} >
                 <Text fontSize="xl" fontWeight="bold" mb={4}>
                     {title}
                 </Text>
               </Flex>
-
-              <Button onClick={onOpen}>Nuevo Documento</Button>
+              <Box w="100%" mb={4} >
+                <Button fontSize={"sm"} colorScheme='blue' size={"sm"} textAlign={"center"} onClick={onOpen}>Nuevo Documento</Button>
+              </Box>
               <FormModal 
                     isOpen={isOpen} 
                     onClose={onClose} 
@@ -109,7 +110,7 @@ const DocsTable = ({ columns, data, title, hideColumn, isDeleting, setIsDeleting
 
           </Grid>
 
-          <Box w={"100%"} overflowX="auto" minW={"fit-content"} >
+          <Box w={"100%"} overflowX="auto" minW={"360px"} >
            {
             data?.map(({ unidad, anexos})=>{
                 return (
@@ -121,12 +122,18 @@ const DocsTable = ({ columns, data, title, hideColumn, isDeleting, setIsDeleting
                                     return (
                                         <Flex flexDir={"column"} key={anexo} >
                                             <Text fontSize="sm" fontWeight="bold" mb={4} bg={"gray.200"} pl={4} py={4} >{anexo}</Text>
-                                            <Box w={"100%"} p={4} overflow={"auto"} className="card p-fluid"  >
+                                            <Box w={"100%"} p={4} overflow={"auto"} >
                                                 {
                                                     documents.length > 0 && (
                                                         <DataTable
                                                             value={documents}
-                                                            tableStyle={{ minWidth: '700px', fontSize: "0.2rem" }}
+                                                            size='small'
+                                                            tableStyle={{
+                                                                minWidth: "600px",
+                                                                fontSize: "0.6rem", 
+                                                            }}
+                                                            responsive
+                                                            responsiveOptions={{ scrollable: true }}
                                                             loading={!documents && documents.length > 0}
                                                             paginator
                                                             rows={10}
@@ -139,15 +146,17 @@ const DocsTable = ({ columns, data, title, hideColumn, isDeleting, setIsDeleting
                                                                 {
                                                                     columns?.map(({field, header}, index) =>{
                                                                         return (
-                                                                            !hideColumn?.includes(field) && 
+                                                                            !hideColumn?.includes(field) &&
                                                                             (field === "documento" || field === "foto") ? (
                                                                                 <Column 
                                                                                    key={index}
                                                                                    field={field}
                                                                                    header={header}
-                                                                                   style={
-                                                                                    { fontSize: "0.6rem" }
-                                                                                   }
+                                                                                   style={{ 
+                                                                                    fontSize: "0.6rem",
+                                                                                    minWidth: '50px',
+                                                                                    width: "20%"
+                                                                                }}
                                                                                    body={ (rowData) => fileBodyTemplate(rowData, field) }
                                                                                    editor={(rowData)=>onDocumentEdit(rowData)}
                                                                                 />
@@ -163,7 +172,8 @@ const DocsTable = ({ columns, data, title, hideColumn, isDeleting, setIsDeleting
                                                                                 editor={(rowData)=>onDocumentEdit(rowData)}
                                                                                 style={{ 
                                                                                     fontSize: "0.6rem",
-                                                                                    minWidth: '100px'
+                                                                                    minWidth: '50px',
+                                                                                    width: "20%"
                                                                                 }}
                                                                             />
                                                                             )
@@ -173,10 +183,13 @@ const DocsTable = ({ columns, data, title, hideColumn, isDeleting, setIsDeleting
                                                                 { editFunction && 
                                                                     <Column 
                                                                         header="Editar" 
-                                                                        style={
-                                                                            { fontSize: "0.6rem" }
-                                                                           }
-                                                                        frozen 
+                                                                        style={{ 
+                                                                            fontSize: "0.6rem",
+                                                                            minWidth: "50px", 
+                                                                            maxWidth: "60px",
+                                                                            width: "20%"
+                                                                        }}
+                                                                        frozen
                                                                         alignFrozen="right"
                                                                         rowEditor
                                                                     />
@@ -184,17 +197,25 @@ const DocsTable = ({ columns, data, title, hideColumn, isDeleting, setIsDeleting
                                                                 { deleteFunction && 
                                                                     <Column 
                                                                     header="Eliminar"
-                                                                    style={
-                                                                        { fontSize: "0.6rem" }
-                                                                       } 
+                                                                    style={{ 
+                                                                        fontSize: "0.6rem",
+                                                                        minWidth: "50px",
+                                                                        maxWidth: "60px",
+                                                                        width: "20%"
+                                                                    }} 
                                                                     frozen
                                                                     alignFrozen="right"
                                                                     body={ (rowData) => (
-                                                                            <Button onClick={()=>{
-                                                                                deleteFunction(rowData.id,[...rowData.documento, ...rowData.foto])
-                                                                                setDeletingId(rowData.id)
-                                                                                setIsDeleting(true)
-                                                                            }} >
+                                                                            <Button 
+                                                                                onClick={()=>{
+                                                                                    deleteFunction(rowData.id,[...rowData.documento, ...rowData.foto])
+                                                                                    setDeletingId(rowData.id)
+                                                                                    setIsDeleting(true)
+                                                                                }}
+                                                                                p={2}
+                                                                                mr={4}
+                                                                                size={"xs"}
+                                                                            >
                                                                                 { isDeleting && rowData.id === deletingId ? <Spinner/> : <MdDelete />}
                                                                             </Button>)} 
                                                                     />

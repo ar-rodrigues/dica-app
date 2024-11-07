@@ -1,4 +1,5 @@
 'use client'
+import moment from 'moment';
 import { Box, Flex, Heading, Text, Spinner, Button } from '@chakra-ui/react';
 import { useContext, useEffect, useState, useRef } from 'react';
 import { useForm } from 'react-hook-form'
@@ -48,6 +49,7 @@ export default function Auditor() {
             setDocuments(prevDocuments => [...prevDocuments, newDocument])
           }
         } else if (payload.eventType === 'UPDATE') {
+          console.log("Received update")
           setDocuments(prevDocuments => prevDocuments.map(document => document.id === newDocument.id ? newDocument : document))
         } else if (payload.eventType === 'DELETE') {
           setDocuments(prevDocuments => prevDocuments.filter(document => document.id !== oldDocument.id))
@@ -81,14 +83,12 @@ export default function Auditor() {
 
   // Handle new document creation
   const handleCreateDocument = async (data) => {
-    console.log("sending files");
     try {
       setIsLoadingFile({ fileId: data.id, loading: true });
       setIsSubmitted(true);
       const storeNewFiles = await storeFiles(data);
       if (storeNewFiles) {
         const storedFilePaths = storeNewFiles.filePaths;
-        console.log("Creating document")
         const newDocument = await createDocument({
           ...data,
           documento: storedFilePaths.documentoPath,
@@ -117,6 +117,7 @@ export default function Auditor() {
   const handleDocumentEdit = (rowData) => {
     const enabledFields = ["comentarios", "nombre", "documento", "foto"]
     const isColumn = (field) => rowData.field.includes(field)
+    const documentId = rowData.field.includes("id") ? rowData.value : null    
   
     const listOfDocs = rowData.field.includes("documento") ? rowData.value : []
     return (
@@ -136,6 +137,7 @@ export default function Auditor() {
                 name={rowData.field}
                 rowData={rowData}
                 isEditing={true}
+                documentId={documentId}
                 className="w-[200px] p-5 p-inputtext-lg"
             /> :
         isColumn("foto") ?
@@ -146,6 +148,7 @@ export default function Auditor() {
                 name={rowData.field}
                 rowData={rowData}
                 isEditing={true}
+                documentId={documentId}
             /> :
             <InputText
                 disabled={!enabledFields.includes(rowData.field)}
@@ -160,27 +163,21 @@ export default function Auditor() {
   const handleRowEditComplete = async (rowData) => {
     
     try {
-      console.log("updating document")
       const newDocs = rowData.newData.documento
       const newFotos = rowData.newData.foto
       const docId = rowData.newData.id
-      const updatedDocument = { ...rowData.newData, last_change: new Date(), documento: newDocs, foto: newFotos };
+      const updatedDocument = { ...rowData.newData, documento: newDocs, foto: newFotos };
       setIsLoadingFile({ fileId: docId, loading: true });
       setIsSubmitted(true);
       const storeFilesUpdate = await storeFiles(updatedDocument)
       if(storeFilesUpdate){
         const storedUpdatePaths = storeFilesUpdate.filePaths
-        console.log("updated paths", storedUpdatePaths)
         const newUpdateDocument = await updateDocument(docId, { 
             ...updatedDocument, 
+            last_change: new Date().toISOString(),
             documento: storedUpdatePaths.documentoPath, 
             foto: storedUpdatePaths.fotoPath 
           })
-          if(newUpdateDocument){
-            setDocuments(prev => [...prev, newUpdateDocument])
-          } else {
-            throw new Error("Error updating document")
-          }
       } else {
         console.error("Error storing file updates:")
         return setIsLoadingFile({fileId: "", loading: false})
@@ -272,7 +269,7 @@ export default function Auditor() {
               columns={columns} 
               isDeleting={isDeleting}
               setIsDeleting={setIsDeleting}
-              isDate={["created_at","last_change"]}
+              isDate={["last_change"]}
               hideColumn={["id","created_at","setup_id","unidad_adm","entrante","saliente"]} 
               useFormHook={useForm}     
               webcamRef={webcamRef}

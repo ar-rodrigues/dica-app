@@ -51,10 +51,8 @@ const FormModal = forwardRef(({ isOpen, onClose, title, fields, setupOptions, hi
 
   
   useEffect(() => {
-    if(isSubmitting){
+    if(isSubmitted){
       onClose()
-    } else if (isSubmitted) {
-      console.log("Form submitted, resetting...")
       reset()
     }
   }, [isSubmitting, reset, onClose, isSubmitted])

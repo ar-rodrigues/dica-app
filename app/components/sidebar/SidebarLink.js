@@ -20,7 +20,7 @@ const SidebarLink = ({ href, text, icon, isActive, isTextVisible     }) => {
       sx={isActive ? activeStyle : {}}
     >
       <Flex align="center">
-        <Box as={icon} mr="2" w={"auto"} h={5} flexShrink={0} />
+        <Box as={icon} mr="2" flexShrink={0} />
         {isTextVisible && <Text>{text}</Text>}
       </Flex>
     </Link>

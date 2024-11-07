@@ -64,21 +64,22 @@ const Sidebar = () => {
       as="nav"
       bgGradient="linear(to-r, blackAlpha.800, gray.800)" // Set background gradient.
       color="white"
-      w={{  base: '10%', // Use percentage width for sidebar on smaller screens
+      w={{  base: '5%', // Use percentage width for sidebar on smaller screens
         md: '200px', // Keep fixed width for larger screens
-        sm: '15%' // Use percentage width for smaller screens
+        sm: '10%', // Use percentage width for smaller screens
+        xs: "5%"
       }}
       p="4"
       position={"static"}
       h={"100%"}
       minH={"100%"}
-      minW={isTextVisible ? "200px" : "80px"} // Set minimum width based on text visibility
+      minW={isTextVisible ? "200px" : "70px"} // Set minimum width based on text visibility
       overflow={"hidden"}
     >
     {/* Create a button for toggling sidebar text visibility. */}
       <Button
         colorScheme="teal"
-        size='sm' w={"auto"} fontSize={"100%"} mt={4} mb={4}
+        size='xs' w={"auto"} fontSize={"sm"} mt={4} mb={4}
         onClick={() => setIsTextVisible(!isTextVisible)} 
       >
         { // Display appropriate icon based on text visibility

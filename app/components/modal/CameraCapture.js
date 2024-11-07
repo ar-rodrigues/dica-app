@@ -1,4 +1,4 @@
-import { useCallback, useState, forwardRef  } from "react";
+import { useCallback, useState, forwardRef, useEffect  } from "react";
 import Webcam from "react-webcam";
 import { 
   Button, Box, Image, Flex, 
@@ -9,11 +9,14 @@ import {
 import { FaCamera, FaTimes  } from "react-icons/fa";
 import { TbCapture } from "react-icons/tb";
 import { v4 as uuidv4 } from "uuid"
+import { fetchFiles } from "@/api/documents/storage/storage";
+import { deleteFiles } from "@/utils/storage/storeFiles";
+import { updateDocument } from "@/api/documents/documents"
 
 
-const CameraCapture = forwardRef(({ register, name, rowData, isEditing=false }, ref) => {
+const CameraCapture = forwardRef(({ register, name, rowData, isEditing=false, documentId }, ref) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [photos, setPhotos] = useState(rowData?.value || []);
+  const [photos, setPhotos] = useState([]);
   const { isOpen:isModalOpen, onOpen, onClose } = useDisclosure()
 
   const capturePhoto = useCallback(() => {
@@ -43,16 +46,29 @@ const CameraCapture = forwardRef(({ register, name, rowData, isEditing=false }, 
   }, [ register, name, onClose, rowData ]);
 
 
-  const handleRemovePhoto = useCallback((index) => {
+  const handleRemovePhoto = useCallback(async (index) => {
     setPhotos((prevPhotos) => prevPhotos.filter((_, i) => i !== index));
     register(name).onChange({ target: { name, value: '' } });
   }, [register, name]);
 
-  
+  useEffect(() => {
+    async function fetchPhotoUrls() {
+        if (rowData?.value) {
+            const photoUrls = await Promise.all(rowData.value.map(async (file) => {
+                const url = await fetchFiles(file);
+                return { dataURL: url.url, file };
+            }));
+            setPhotos(photoUrls);
+        }
+    }
+    fetchPhotoUrls();
+}, []);
+
+console.log(photos)
 
   const PhotoGallery = photos.length > 0 && (
 
-      <Flex wrap="wrap" w="fit" p={2} border="1px solid #eee" borderRadius="md" overflowX="auto" justify={"center"} align={"center"}  >
+      <Flex wrap="wrap" w="fit" p={2} m={2} border="1px solid #eee" borderRadius="md" overflowX="auto" justify={"center"} align={"center"}  >
         {photos.map((photo, index) => (
           <Box key={index} position="relative" mr={2} mb={2} minW={"80px"} >
             <Button onClick={() => handleRemovePhoto(index)} size="xs" position="absolute" top="1" right="1" colorScheme="red" zIndex="1">
