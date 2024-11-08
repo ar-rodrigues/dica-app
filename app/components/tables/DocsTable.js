@@ -10,16 +10,15 @@ import { FaFilePdf } from "react-icons/fa";
 import FormModal from '@/components/modal/FormModal'
 
 
-const DocsTable = ({ columns, data, title, hideColumn, isDeleting, setIsDeleting, isDate, editFunction, deleteFunction, useFormHook, webcamRef, fileInputRef, isSubmitted, setIsSubmitted, onCreateDocument, isLoadingFile, setIsLoadingFile, onDocumentEdit,onRowEditComplete }, ref) => {   
+const DocsTable = ({ columns, data, title, hideColumn, isDeleting, setIsDeleting, isDate, editFunction, deleteFunction, useFormHook, webcamRef, cameraModal, photos, setPhotos, fileInputRef, isSubmitted, setIsSubmitted, onCreateDocument, isLoadingFile, setIsLoadingFile, onDocumentEdit,onRowEditComplete }, ref) => {   
     const [filters, setFilters] = useState({
         global: { value: null, matchMode: FilterMatchMode.CONTAINS },
         ...columns?.reduce((acc, column) => (
             { ...acc, [column.field]: { value: null, matchMode: FilterMatchMode.CONTAINS } }
         ), {})
     })
-    const { isOpen, onOpen, onClose } = useDisclosure();
+    const formModal = useDisclosure();
     const [ deletingId, setDeletingId ] = useState(null)
-    const { register } = useFormHook()
 
     
     const dateBodyTemplate = (rowData) => {
@@ -80,19 +79,19 @@ const DocsTable = ({ columns, data, title, hideColumn, isDeleting, setIsDeleting
 
   return (
       <Box w="100%" h="100%" p={4} mt={10} >
-          <Grid gridTemplateColumns={{ base: '1fr', md: '1fr 1fr 1fr' }} gap={4} >
+          <Grid p={4} gap={4} > 
           
-              <Flex align="flex-start" justify="space-between" mb={4} >
+              <Box w="100%" mb={4} >
                 <Text fontSize="xl" fontWeight="bold" mb={4}>
                     {title}
                 </Text>
-              </Flex>
-              <Box w="100%" mb={4} >
-                <Button fontSize={"sm"} colorScheme='blue' size={"sm"} textAlign={"center"} onClick={onOpen}>Nuevo Documento</Button>
+              </Box>
+              <Box w="100%" mb={2} >
+                <Button w={"20%"} fontSize={"sm"} colorScheme='blue' size={"sm"} onClick={formModal.onOpen}>Nuevo Documento</Button>
               </Box>
               <FormModal 
-                    isOpen={isOpen} 
-                    onClose={onClose} 
+                    formModal={formModal}
+                    cameraModal={cameraModal}
                     title={"Nuevo Documento"} 
                     fields={columns}
                     setupOptions={data}
@@ -103,6 +102,8 @@ const DocsTable = ({ columns, data, title, hideColumn, isDeleting, setIsDeleting
                     onSubmit={onCreateDocument}
                     useFormHook={useFormHook}
                     webcamRef={webcamRef}
+                    photos={photos}
+                    setPhotos={setPhotos}
                     fileInputRef={fileInputRef}
                     isSubmitted={isSubmitted}
                     setIsSubmitted={setIsSubmitted}

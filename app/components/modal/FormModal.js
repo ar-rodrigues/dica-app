@@ -12,17 +12,17 @@ import {
   Input,
   FormErrorMessage,
   Flex,
-  Select,
-  Textarea, 
+  Textarea,
   Box
 } from "@chakra-ui/react";
 import { useState, useEffect, forwardRef } from "react";
+import Select from 'react-select';
 
 import FileUploadField from "./FileUploadField";
 import CameraCapture from "./CameraCapture";
 
 
-const FormModal = forwardRef(({ isOpen, onClose, title, fields, setupOptions, hideField, isComment,webcamRef, fileInputRef, useFormHook, isSubmitted, setIsSubmitted, onSubmit },ref) => {
+const FormModal = forwardRef(({ formModal, title, fields, setupOptions, hideField, isComment, webcamRef, cameraModal, photos, setPhotos, fileInputRef, useFormHook, isSubmitted, setIsSubmitted, onSubmit }, ref) => {
   const {
     register,
     handleSubmit,
@@ -35,7 +35,6 @@ const FormModal = forwardRef(({ isOpen, onClose, title, fields, setupOptions, hi
   const selectedUnidad = watch("unidad_adm");
   const [anexosOptions, setAnexosOptions] = useState([]);
   
-
   useEffect(() => {
     if (selectedUnidad) {
       const selectedData = setupOptions.find(item => item.unidad === selectedUnidad);
@@ -43,94 +42,85 @@ const FormModal = forwardRef(({ isOpen, onClose, title, fields, setupOptions, hi
         setValue("entrante", selectedData.entrante);
         setValue("saliente", selectedData.saliente);
         setValue("responsable", selectedData.responsable);
-        setAnexosOptions(selectedData.anexos);
+        setAnexosOptions(selectedData.anexos.map(({ anexo }) => ({ value: anexo, label: anexo })));
       }
     }
   }, [selectedUnidad, setValue, setupOptions]);
 
-
-  
   useEffect(() => {
-    if(isSubmitted){
-      onClose()
-      reset()
+    if (isSubmitted) {
+      formModal.onClose();
+      reset();
     }
-  }, [isSubmitting, reset, onClose, isSubmitted])
-  
-
+  }, [isSubmitting, reset, formModal.onClose, isSubmitted]);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} isCentered>
+    <Modal isOpen={formModal.isOpen} onClose={formModal.onClose} isCentered>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>{title}</ModalHeader>
         <ModalBody>
           <form onSubmit={handleSubmit(onSubmit)}>
-            {
-            fields?.map(({field, header, type}) => (
-                // Check if the field is in the hideField array
-                !hideField?.includes(field) && (
-                  <FormControl key={field} isInvalid={errors[field]} mb={4}>
-                    <FormLabel htmlFor={field}>{header}</FormLabel>
-                    {
-                        isComment?.includes(field) ?
-                            <Textarea 
-                              disabled={isSubmitting || isSubmitted} 
-                              {...register(field)} 
-                            /> :
-                        field === "unidad_adm" ? 
-                            <Select 
-                              disabled={isSubmitting || isSubmitted} 
-                              {...register(field, { required: true } )} 
-                              placeholder="Selecione una unidad" 
-                            >
-                                {
-                                  setupOptions?.map(({unidad})=>{
-                                    return <option key={unidad} value={unidad}>{unidad}</option>
-                                  })
-                                }
-                            </Select> :
-                        field === "anexo" ? 
-                            <Select 
-                              disabled={isSubmitting || isSubmitted} 
-                              {...register(field, { required: true } )} 
-                              placeholder="Selecione el anexo" 
-                            >
-                                {
-                                  anexosOptions.map(({ anexo }) => (
-                                    <option key={anexo} value={anexo}>{anexo}</option>
-                                  ))
-                                }
-                            </Select> :
-                        field === "documento" ?
-                            <FileUploadField 
-                              label="documentos" {...register(field)}
-                              ref={fileInputRef}
-                              register={register} 
-                              name={field} 
-                              isSubmitted={isSubmitted}  
-                            /> :
-                        field === "foto" ?
-                            <CameraCapture 
-                              {...register(field)} 
-                              ref={webcamRef} 
-                              register={register} 
-                              name={field} 
-                              isSubmitted={isSubmitted}
-                              isModal={true} 
-                            /> :
-                            <Input 
-                              disabled={field === "entrante" || field === "saliente" || field === "responsable" || isSubmitted || isSubmitting} 
-                              {...register(field)} 
-                            />
-                    }
-                  </FormControl>
-                )
-              ))}
+            {fields?.map(({ field, header, type }) => (
+              !hideField?.includes(field) && (
+                <FormControl key={field} isInvalid={errors[field]} mb={4}>
+                  <FormLabel htmlFor={field}>{header}</FormLabel>
+                  {
+                    isComment?.includes(field) ? (
+                      <Textarea
+                        disabled={isSubmitting || isSubmitted}
+                        {...register(field)}
+                      />
+                    ) : field === "unidad_adm" ? (
+                      <Select
+                        options={setupOptions.map(({ unidad }) => ({ value: unidad, label: unidad }))}
+                        isDisabled={isSubmitting || isSubmitted}
+                        isClearable={true}
+                        placeholder="Selecione una unidad"
+                        onChange={(option) => setValue("unidad_adm", option.value)}
+                      />
+                    ) : field === "anexo" ? (
+                      <Select
+                        options={anexosOptions}
+                        isDisabled={isSubmitting || isSubmitted}
+                        isClearable={true}
+                        placeholder="Selecione el anexo"
+                        onChange={(option) => setValue("anexo", option.value)}
+                      />
+                    ) : field === "documento" ? (
+                      <FileUploadField
+                        label="documentos" {...register(field)}
+                        ref={fileInputRef}
+                        register={register}
+                        name={field}
+                        isSubmitted={isSubmitted}
+                      />
+                    ) : field === "foto" ? (
+                      <CameraCapture
+                        {...register(field)}
+                        ref={webcamRef}
+                        register={register}
+                        name={field}
+                        photos={photos}
+                        setPhotos={setPhotos}
+                        isSubmitted={isSubmitted}
+                        cameraModal={cameraModal} 
+                      />
+                    ) : (
+                      <Input
+                        disabled={["entrante", "saliente", "responsable"].includes(field) || isSubmitted || isSubmitting}
+                        {...register(field)}
+                      />
+                    )
+                  }
+                  <FormErrorMessage>{errors[field] && errors[field].message}</FormErrorMessage>
+                </FormControl>
+              )
+            ))}
             <Flex justifyContent="flex-end" mt={4}>
               <Button
                 variant="outline"
-                onClick={onClose}
+                onClick={formModal.onClose}
                 mr={2}
                 isLoading={isSubmitting}
               >
@@ -151,5 +141,4 @@ const FormModal = forwardRef(({ isOpen, onClose, title, fields, setupOptions, hi
   );
 })
 
-export default FormModal
-
+export default FormModal;

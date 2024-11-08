@@ -1,6 +1,6 @@
 'use client'
 import moment from 'moment';
-import { Box, Flex, Heading, Text, Spinner, Button } from '@chakra-ui/react';
+import { Box, Flex, Heading, Text, Spinner, useDisclosure } from '@chakra-ui/react';
 import { useContext, useEffect, useState, useRef } from 'react';
 import { useForm } from 'react-hook-form'
 import { UserRoleContext } from '@/contexts';
@@ -24,9 +24,11 @@ export default function Auditor() {
   const [ isDeleting, setIsDeleting ] = useState(false)
   const [ columns, setColumns ] = useState([])
   const webcamRef = useRef(null);
+  const [ photos, setPhotos ] = useState([])
   const fileInputRef = useRef(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoadingFile, setIsLoadingFile] = useState({ fileId: "", loading: false });
+  const cameraModal = useDisclosure()
 
 
   const {
@@ -117,8 +119,7 @@ export default function Auditor() {
   const handleDocumentEdit = (rowData) => {
     const enabledFields = ["comentarios", "nombre", "documento", "foto"]
     const isColumn = (field) => rowData.field.includes(field)
-    const documentId = rowData.field.includes("id") ? rowData.value : null    
-  
+    const documentId = rowData.field.includes("id") ? rowData.value : null
     const listOfDocs = rowData.field.includes("documento") ? rowData.value : []
     return (
         isColumn("comentarios") ?
@@ -149,6 +150,7 @@ export default function Auditor() {
                 rowData={rowData}
                 isEditing={true}
                 documentId={documentId}
+                cameraModal={cameraModal}
             /> :
             <InputText
                 disabled={!enabledFields.includes(rowData.field)}
@@ -273,6 +275,9 @@ export default function Auditor() {
               hideColumn={["id","created_at","setup_id","unidad_adm","entrante","saliente"]} 
               useFormHook={useForm}     
               webcamRef={webcamRef}
+              cameraModal={cameraModal}
+              photos={photos}
+              setPhotos={setPhotos}
               fileInputRef={fileInputRef}
               isSubmitted={isSubmitted}
               setIsSubmitted={setIsSubmitted}

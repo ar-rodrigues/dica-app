@@ -3,8 +3,7 @@ import Webcam from "react-webcam";
 import { 
   Button, Box, Image, Flex, 
   Card, CardHeader, CardBody, 
-  Modal, ModalOverlay, ModalContent,
-  useDisclosure,
+  Modal, ModalOverlay, ModalContent
 } from "@chakra-ui/react";
 import { FaCamera, FaTimes  } from "react-icons/fa";
 import { TbCapture } from "react-icons/tb";
@@ -14,10 +13,7 @@ import { deleteFiles } from "@/utils/storage/storeFiles";
 import { updateDocument } from "@/api/documents/documents"
 
 
-const CameraCapture = forwardRef(({ register, name, rowData, isEditing=false, documentId }, ref) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [photos, setPhotos] = useState([]);
-  const { isOpen:isModalOpen, onOpen, onClose } = useDisclosure()
+const CameraCapture = forwardRef(({ register, name, rowData, isEditing=false, documentId, photos, setPhotos, cameraModal: {isOpen, onOpen, onClose} }, ref) => {
 
   const capturePhoto = useCallback(() => {
     if(ref.current){
@@ -51,25 +47,13 @@ const CameraCapture = forwardRef(({ register, name, rowData, isEditing=false, do
     register(name).onChange({ target: { name, value: '' } });
   }, [register, name]);
 
-  useEffect(() => {
-    async function fetchPhotoUrls() {
-        if (rowData?.value) {
-            const photoUrls = await Promise.all(rowData.value.map(async (file) => {
-                const url = await fetchFiles(file);
-                return { dataURL: url.url, file };
-            }));
-            setPhotos(photoUrls);
-        }
-    }
-    fetchPhotoUrls();
-}, []);
+  console.log(photos, "photos")
 
-console.log(photos)
 
-  const PhotoGallery = photos.length > 0 && (
+  const PhotoGallery = photos?.length > 0 && (
 
       <Flex wrap="wrap" w="fit" p={2} m={2} border="1px solid #eee" borderRadius="md" overflowX="auto" justify={"center"} align={"center"}  >
-        {photos.map((photo, index) => (
+        {photos?.map((photo, index) => (
           <Box key={index} position="relative" mr={2} mb={2} minW={"80px"} >
             <Button onClick={() => handleRemovePhoto(index)} size="xs" position="absolute" top="1" right="1" colorScheme="red" zIndex="1">
               <FaTimes />
@@ -86,7 +70,6 @@ console.log(photos)
       <CardHeader position={"absolute"} textAlign={"end"} width={"full"} >
         <Button 
           onClick={() => {
-            setIsOpen(false)
             onClose()
           }} 
           position={"absolute"} 
@@ -123,7 +106,6 @@ console.log(photos)
         <Card width={"full"} p={2}>
           <Button 
             onClick={ () => {
-               setIsOpen(true)
                onOpen()
             }} 
             variant='ghost' 
@@ -135,7 +117,7 @@ console.log(photos)
           </Button>
         </Card>
       }
-      <Modal isOpen={isModalOpen} onClose={onClose} size={"xl"} >
+      <Modal isOpen={isOpen} onClose={onClose} size={"xl"} >
         <ModalOverlay />
         <ModalContent width={"full"} >
           <Card borderRadius={"md"} width={"full"} >
@@ -144,7 +126,7 @@ console.log(photos)
           </Card>
         </ModalContent>
       </Modal>
-      { photos.length > 0 && PhotoGallery }
+      { photos?.length > 0 && PhotoGallery }
     </Box>
   );
 });

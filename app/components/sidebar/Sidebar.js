@@ -46,8 +46,9 @@ const Sidebar = () => {
   
   // If the current path is '/login', return null (sidebar not needed for login page).
   if (pathname === '/login') return null;
+  
 
-  if (pathname === '/' && !role) return null
+  if (pathname === '/' && (!role || role)) return null
 
   // Define an array of links for sidebar navigation.
   // Each link object contains information about the href, text, icon, and roles that can access it.
