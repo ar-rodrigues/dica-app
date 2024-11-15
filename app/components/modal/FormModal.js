@@ -22,7 +22,7 @@ import FileUploadField from "./FileUploadField";
 import CameraCapture from "./CameraCapture";
 
 
-const FormModal = forwardRef(({ formModal, title, fields, setupOptions, hideField, isComment, webcamRef, cameraModal, photos, setPhotos, fileInputRef, useFormHook, isSubmitted, setIsSubmitted, onSubmit }, ref) => {
+const FormModal = forwardRef(({ formModal, title, fields, setupOptions, hideField, isComment, webcamRef, cameraModal, fileInputRef, useFormHook, isSubmitted, setIsSubmitted, onSubmit }, ref) => {
   const {
     register,
     handleSubmit,
@@ -101,8 +101,6 @@ const FormModal = forwardRef(({ formModal, title, fields, setupOptions, hideFiel
                         ref={webcamRef}
                         register={register}
                         name={field}
-                        photos={photos}
-                        setPhotos={setPhotos}
                         isSubmitted={isSubmitted}
                         cameraModal={cameraModal} 
                       />

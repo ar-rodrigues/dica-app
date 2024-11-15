@@ -10,7 +10,7 @@ import { FaFilePdf } from "react-icons/fa";
 import FormModal from '@/components/modal/FormModal'
 
 
-const DocsTable = ({ columns, data, title, hideColumn, isDeleting, setIsDeleting, isDate, editFunction, deleteFunction, useFormHook, webcamRef, cameraModal, photos, setPhotos, fileInputRef, isSubmitted, setIsSubmitted, onCreateDocument, isLoadingFile, setIsLoadingFile, onDocumentEdit,onRowEditComplete }, ref) => {   
+const DocsTable = ({ columns, data, title, hideColumn, isDeletingDocument, setIsDeleting, isDate, editFunction, deleteFunction, useFormHook, webcamRef, cameraModal, fileInputRef, isSubmitted, setIsSubmitted, onCreateDocument, isLoadingFile, setIsLoadingFile, onDocumentEdit,onRowEditComplete }, ref) => {   
     const [filters, setFilters] = useState({
         global: { value: null, matchMode: FilterMatchMode.CONTAINS },
         ...columns?.reduce((acc, column) => (
@@ -18,9 +18,8 @@ const DocsTable = ({ columns, data, title, hideColumn, isDeleting, setIsDeleting
         ), {})
     })
     const formModal = useDisclosure();
-    const [ deletingId, setDeletingId ] = useState(null)
+    const [ deletingDocumentId, setDeletingDocumentId ] = useState(null)
 
-    
     const dateBodyTemplate = (rowData) => {
         const dateField = isDate.find(field => rowData[field]);
         const formatedDate = moment(rowData[dateField]).format('DD/MM/YY HH:mm')
@@ -38,7 +37,7 @@ const DocsTable = ({ columns, data, title, hideColumn, isDeleting, setIsDeleting
                       const fieldName = field === 'foto' ? <MdInsertPhoto /> : <FaFilePdf />;
                       const handleClick = async ()=>{
                         setIsLoadingFile({fileId:item, loading:true})
-                        const file = await fetchFiles(item)
+                        const file = await fetchFiles(item.path)
                         return file.url
                       }
                       return (
@@ -70,7 +69,7 @@ const DocsTable = ({ columns, data, title, hideColumn, isDeleting, setIsDeleting
 
     
     useEffect(() => {
-        !isDeleting && setDeletingId(null)
+        !isDeletingDocument && setDeletingDocumentId(null)
     })
 
     
@@ -83,11 +82,11 @@ const DocsTable = ({ columns, data, title, hideColumn, isDeleting, setIsDeleting
           
               <Box w="100%" mb={4} >
                 <Text fontSize="xl" fontWeight="bold" mb={4}>
-                    {title}
+                    {title || "Documentos"}
                 </Text>
               </Box>
-              <Box w="100%" mb={2} >
-                <Button w={"20%"} fontSize={"sm"} colorScheme='blue' size={"sm"} onClick={formModal.onOpen}>Nuevo Documento</Button>
+              <Box className="w-full sm:w-[30%] mb-2" >
+                <Button className="w-full px-4 py-2 text-sm text-white" colorScheme='blue' onClick={formModal.onOpen}>Nuevo Documento</Button>
               </Box>
               <FormModal 
                     formModal={formModal}
@@ -102,8 +101,6 @@ const DocsTable = ({ columns, data, title, hideColumn, isDeleting, setIsDeleting
                     onSubmit={onCreateDocument}
                     useFormHook={useFormHook}
                     webcamRef={webcamRef}
-                    photos={photos}
-                    setPhotos={setPhotos}
                     fileInputRef={fileInputRef}
                     isSubmitted={isSubmitted}
                     setIsSubmitted={setIsSubmitted}
@@ -210,14 +207,14 @@ const DocsTable = ({ columns, data, title, hideColumn, isDeleting, setIsDeleting
                                                                             <Button 
                                                                                 onClick={()=>{
                                                                                     deleteFunction(rowData.id,[...rowData.documento, ...rowData.foto])
-                                                                                    setDeletingId(rowData.id)
-                                                                                    setIsDeleting(true)
+                                                                                    setDeletingDocumentId(rowData.id)
+                                                                                    setIsDeletingDocument(true)
                                                                                 }}
                                                                                 p={2}
                                                                                 mr={4}
                                                                                 size={"xs"}
                                                                             >
-                                                                                { isDeleting && rowData.id === deletingId ? <Spinner/> : <MdDelete />}
+                                                                                { isDeletingDocument && rowData.id === deletingDocumentId ? <Spinner/> : <MdDelete />}
                                                                             </Button>)} 
                                                                     />
                                                                 }

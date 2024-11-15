@@ -9,7 +9,7 @@ import useTransformSetups from '@/utils/hooks/useTransformSetups';
 import { fetchDocument, createDocument, updateDocument, deleteDocument } from '@/api/documents/documents';
 import { fetchSetup } from '@/api/setups/setups';
 import DocsTable from '@/components/tables/DocsTable';
-import { storeFiles } from "@/utils/storage/storeFiles";
+import { storeFiles, deleteFiles } from "@/utils/storage/storeFiles";
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
 import FileUploadField from "@/components/modal/FileUploadField";
@@ -20,16 +20,17 @@ export default function Auditor() {
   const { userRole } = useContext(UserRoleContext);
   const { fullName, role, email, isAdmin } = userRole || {}
   const [ documents, setDocuments ] = useState([])
+  const [transformedDocuments, setTransformedDocuments] = useState([]);
   const [ setups, setSetups ] = useState([])
-  const [ isDeleting, setIsDeleting ] = useState(false)
+  const [ isDeletingDocument, setIsDeletingDocument ] = useState(false)
   const [ columns, setColumns ] = useState([])
   const webcamRef = useRef(null);
-  const [ photos, setPhotos ] = useState([])
   const fileInputRef = useRef(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoadingFile, setIsLoadingFile] = useState({ fileId: "", loading: false });
   const cameraModal = useDisclosure()
 
+  console.log("transformedDocuments",transformedDocuments)
 
   const {
     register,
@@ -55,7 +56,7 @@ export default function Auditor() {
           setDocuments(prevDocuments => prevDocuments.map(document => document.id === newDocument.id ? newDocument : document))
         } else if (payload.eventType === 'DELETE') {
           setDocuments(prevDocuments => prevDocuments.filter(document => document.id !== oldDocument.id))
-          setIsDeleting(false)
+          setIsDocumentDocument(false)
         }
       }
     },
@@ -85,6 +86,7 @@ export default function Auditor() {
 
   // Handle new document creation
   const handleCreateDocument = async (data) => {
+
     try {
       setIsLoadingFile({ fileId: data.id, loading: true });
       setIsSubmitted(true);
@@ -119,7 +121,6 @@ export default function Auditor() {
   const handleDocumentEdit = (rowData) => {
     const enabledFields = ["comentarios", "nombre", "documento", "foto"]
     const isColumn = (field) => rowData.field.includes(field)
-    const documentId = rowData.field.includes("id") ? rowData.value : null
     const listOfDocs = rowData.field.includes("documento") ? rowData.value : []
     return (
         isColumn("comentarios") ?
@@ -138,7 +139,6 @@ export default function Auditor() {
                 name={rowData.field}
                 rowData={rowData}
                 isEditing={true}
-                documentId={documentId}
                 className="w-[200px] p-5 p-inputtext-lg"
             /> :
         isColumn("foto") ?
@@ -149,7 +149,6 @@ export default function Auditor() {
                 name={rowData.field}
                 rowData={rowData}
                 isEditing={true}
-                documentId={documentId}
                 cameraModal={cameraModal}
             /> :
             <InputText
@@ -163,11 +162,22 @@ export default function Auditor() {
   }
 
   const handleRowEditComplete = async (rowData) => {
-    
     try {
       const newDocs = rowData.newData.documento
       const newFotos = rowData.newData.foto
+      const oldFotos = rowData.data.foto
       const docId = rowData.newData.id
+      
+      // Check if any oldFotos is not in newFotos and delete them
+      const fotosToDelete = oldFotos.filter(oldFoto => {
+        const newPhotoPaths = newFotos.map(newFoto => newFoto.path)
+        return !newPhotoPaths.includes(oldFoto.path)
+      });
+      
+      if(fotosToDelete.length > 0) {
+        await deleteFiles(fotosToDelete)
+      }
+      
       const updatedDocument = { ...rowData.newData, documento: newDocs, foto: newFotos };
       setIsLoadingFile({ fileId: docId, loading: true });
       setIsSubmitted(true);
@@ -180,6 +190,10 @@ export default function Auditor() {
             documento: storedUpdatePaths.documentoPath, 
             foto: storedUpdatePaths.fotoPath 
           })
+        setDocuments((prevDocuments) =>
+          prevDocuments.map((doc) =>
+            doc.id === newUpdateDocument.id ? newUpdateDocument : doc
+          ));
       } else {
         console.error("Error storing file updates:")
         return setIsLoadingFile({fileId: "", loading: false})
@@ -189,6 +203,7 @@ export default function Auditor() {
     } finally {
       setIsLoadingFile({fileId: "", loading: false})
       setIsSubmitted(false)
+      window.location.reload()
     }
   }
 
@@ -227,20 +242,24 @@ export default function Auditor() {
 
   // Use the transform hook here, at the component level
   const transformedSetups = setups ? useTransformSetups(setups, 'unidad_adm', fieldsToInclude) : [{unidad_admin:"",entrante:"", saliente:"", responsable:"", anexos:[] }];
-  const transformedDocuments = transformedSetups?.reduce((acc, setup) => {
-    const unidad = setup.unidad_adm || "";
-    const entrante = setup.entrante || ""
-    const saliente = setup.saliente || ""
-    const responsable = setup.responsable || ""
-    const anexos = setup.anexos || [];
-  
-    acc.push({ unidad, entrante, saliente, responsable, anexos: anexos?.map(anexo => {
-      const documentsForAnexo = documents?.filter(doc => doc.anexo === anexo && doc.unidad_adm === unidad) || [];
-      return { anexo, documents: documentsForAnexo };
-    })});
-  
-    return acc;
-  }, []);
+  useEffect(()=>{
+    const newTransformedDocuments = transformedSetups?.reduce((acc, setup) => {
+      const unidad = setup.unidad_adm || "";
+      const entrante = setup.entrante || ""
+      const saliente = setup.saliente || ""
+      const responsable = setup.responsable || ""
+      const anexos = setup.anexos || [];
+    
+      acc.push({ unidad, entrante, saliente, responsable, anexos: anexos?.map(anexo => {
+        const documentsForAnexo = documents?.filter(doc => doc.anexo === anexo && doc.unidad_adm === unidad) || [];
+        return { anexo, documents: documentsForAnexo };
+      })});
+    
+      return acc;
+    }, []);
+    
+    setTransformedDocuments(newTransformedDocuments)
+  }, [documents, transformedSetups])
 
 
   if (!userRole || !documents) {
@@ -269,15 +288,13 @@ export default function Auditor() {
               deleteFunction={deleteDocument}
               setupOptions={transformedSetups}
               columns={columns} 
-              isDeleting={isDeleting}
-              setIsDeleting={setIsDeleting}
+              isDeletingDocument={isDeletingDocument}
+              setIsDeletingDocument={setIsDeletingDocument}
               isDate={["last_change"]}
               hideColumn={["id","created_at","setup_id","unidad_adm","entrante","saliente"]} 
               useFormHook={useForm}     
               webcamRef={webcamRef}
               cameraModal={cameraModal}
-              photos={photos}
-              setPhotos={setPhotos}
               fileInputRef={fileInputRef}
               isSubmitted={isSubmitted}
               setIsSubmitted={setIsSubmitted}
