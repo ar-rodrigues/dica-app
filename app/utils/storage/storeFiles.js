@@ -34,8 +34,10 @@ export async function storeFiles({documento, foto, nombre, unidad_adm, anexo}) {
             for (let doc of documento) {
                 // check if file is object
                 console.log("Checking documento object", doc)
-                if(typeof doc === 'object'){
-                    const newDocumentPath = await uploadFile('audits', unidad_adm, anexo, nombre, doc.file);
+                if(doc.path){
+                    filePaths.documentoPath.push({fileName:doc.fileName, path:doc.path})
+                }else{
+                    const newDocumentPath = await uploadFile('audits', unidad_adm, anexo, nombre, doc);
                     filePaths.documentoPath.push({fileName: doc.name, path: newDocumentPath});
                 }
             }

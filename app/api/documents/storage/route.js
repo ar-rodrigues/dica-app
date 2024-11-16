@@ -7,26 +7,27 @@ import { v4 as uuid4 } from "uuid"
 
 /**
  * ///
- * /////// GET /api/documents/storage?fileName=filename&folder=foldername
+ * /////// GET /api/documents/storage?filePath=filename&folder=foldername
  */
 export async function GET(request) {
     console.log("Route sending data")
-    const fileName = request.nextUrl.searchParams.get('fileName')
+    const filePath = request.nextUrl.searchParams.get('filePath')
     const folder = request.nextUrl.searchParams.get('folder') || 'audits'
-    //console.log(fileName)
+    //console.log(filePath)
     try {
       const supabase = createClient();
       const { data, error } = await supabase.storage
         .from(folder)
-        .createSignedUrl(fileName, 60*60)
+        .createSignedUrl(filePath, 60*60)
   
       if (error) {
         console.log("error route get",error)
         return NextResponse.json({ error: error.message }, { status: 500 });
       } else {
         const { signedUrl } = data
+        //console.log("Url on route: ",signedUrl)
         return NextResponse.json({
-          folder, fileName, url: signedUrl
+          folder, fileName: filePath.split('/')[2], url: signedUrl
         });
       }
     } catch (error) {

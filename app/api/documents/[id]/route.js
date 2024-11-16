@@ -40,7 +40,6 @@ export async function PUT(request, { params }) {
     const id = params.id
     const updateData = await request.json()
     console.log("update received on route")
-    console.log("UpdateData", updateData)
 
     try {
         const { data, error } = await supabase
@@ -55,7 +54,7 @@ export async function PUT(request, { params }) {
             return NextResponse.json({ error: error.message }, { status: 500 })
         }
         
-        return NextResponse.json({ message: 'Document updated successfully', data }, { status: 200 })
+        return NextResponse.json({ message: 'Document updated successfully', data: {...data} }, { status: 200 })
     } catch (error) {
         console.error('Error updating document:', error)
         console.log(error)

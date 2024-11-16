@@ -12,7 +12,7 @@ const SidebarLink = ({ href, text, icon, isActive, isTextVisible     }) => {
 
   return (
     <Link
-      as={NextLink}
+      //as={NextLink}
       href={href}
       _hover={{ bg: 'white', color: 'black', borderRadius: 'md' }}
       p="2"

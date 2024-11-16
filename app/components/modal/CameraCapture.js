@@ -37,7 +37,6 @@ const CameraCapture = forwardRef(({ register, name, rowData, isEditing=false, ca
     }
   },[register])
 
-  console.log("rowData",rowData?.value)
 
   useEffect(() => {
     if(rowData?.value){
@@ -45,7 +44,6 @@ const CameraCapture = forwardRef(({ register, name, rowData, isEditing=false, ca
       setIsLoading(false)
     }
   }, [register, rowData?.value, isEditing])
-  //console.log("photos", photos)
 
   
   const capturePhoto = useCallback(() => {

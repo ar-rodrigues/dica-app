@@ -30,7 +30,6 @@ export default function Auditor() {
   const [isLoadingFile, setIsLoadingFile] = useState({ fileId: "", loading: false });
   const cameraModal = useDisclosure()
 
-  console.log("transformedDocuments",transformedDocuments)
 
   const {
     register,
@@ -53,10 +52,10 @@ export default function Auditor() {
           }
         } else if (payload.eventType === 'UPDATE') {
           console.log("Received update")
-          setDocuments(prevDocuments => prevDocuments.map(document => document.id === newDocument.id ? newDocument : document))
+          setDocuments(prevDocuments => prevDocuments.map(document => document?.id === newDocument.id ? newDocument : document))
         } else if (payload.eventType === 'DELETE') {
-          setDocuments(prevDocuments => prevDocuments.filter(document => document.id !== oldDocument.id))
-          setIsDocumentDocument(false)
+          setDocuments(prevDocuments => prevDocuments.filter(document => document?.id !== oldDocument.id))
+          setIsDeletingDocument(false)
         }
       }
     },
@@ -101,7 +100,7 @@ export default function Auditor() {
         if (newDocument) {
           setDocuments(prev => [...prev, newDocument]);
         } else {
-          console.log("Error creating document")
+          console.error("Error creating document")
           throw new Error("Error creating document. Document creation aborted.");
         }
       } else {
@@ -162,8 +161,10 @@ export default function Auditor() {
   }
 
   const handleRowEditComplete = async (rowData) => {
+    //return console.log(rowData)
     try {
       const newDocs = rowData.newData.documento
+      const oldDocs = rowData.data.documento
       const newFotos = rowData.newData.foto
       const oldFotos = rowData.data.foto
       const docId = rowData.newData.id
@@ -176,6 +177,16 @@ export default function Auditor() {
       
       if(fotosToDelete.length > 0) {
         await deleteFiles(fotosToDelete)
+      }
+
+      // Check if any oldDocs is not in newDocs and delete them
+      const docsToDelete = oldDocs.filter(oldDoc => {
+        const newDocPaths = newDocs.map(newDoc => newDoc.path)
+        return !newDocPaths.includes(oldDoc.path)
+      });
+      
+      if(docsToDelete.length > 0) {
+        await deleteFiles(docsToDelete)
       }
       
       const updatedDocument = { ...rowData.newData, documento: newDocs, foto: newFotos };
@@ -190,10 +201,21 @@ export default function Auditor() {
             documento: storedUpdatePaths.documentoPath, 
             foto: storedUpdatePaths.fotoPath 
           })
-        setDocuments((prevDocuments) =>
-          prevDocuments.map((doc) =>
-            doc.id === newUpdateDocument.id ? newUpdateDocument : doc
-          ));
+        console.log("have to fix this", documents)
+        ////////////////////////////////////////////// HERE IS THE PROBLEM  //////////////////////////////////////////////
+        // if (newUpdateDocument?.data?.[0]) {
+        //   const updatedDoc = newUpdateDocument.data[0];
+        //   setDocuments((prevDocuments) =>
+        //     prevDocuments.map((doc) => 
+        //       {
+        //         console.log("docs have same id:", doc.id === updatedDoc.id)
+        //         doc.id === updatedDoc.id ? updatedDoc : doc}
+        //     )
+        //   );
+        // } else {
+        //   console.error('Unexpected document update response structure:', newUpdateDocument);
+        // }
+        
       } else {
         console.error("Error storing file updates:")
         return setIsLoadingFile({fileId: "", loading: false})
@@ -203,6 +225,7 @@ export default function Auditor() {
     } finally {
       setIsLoadingFile({fileId: "", loading: false})
       setIsSubmitted(false)
+      console.log("documents after update", documents)
       window.location.reload()
     }
   }
@@ -251,7 +274,7 @@ export default function Auditor() {
       const anexos = setup.anexos || [];
     
       acc.push({ unidad, entrante, saliente, responsable, anexos: anexos?.map(anexo => {
-        const documentsForAnexo = documents?.filter(doc => doc.anexo === anexo && doc.unidad_adm === unidad) || [];
+        const documentsForAnexo = documents?.filter(doc => doc?.anexo === anexo && doc.unidad_adm === unidad) || [];
         return { anexo, documents: documentsForAnexo };
       })});
     
@@ -279,7 +302,7 @@ export default function Auditor() {
       <Flex direction="column" align="center" mt={8}>
         <Heading as="h2" size="xl" mb={4}>Auditor</Heading>
         <Flex w="100%" overflowX="auto" mb={8} flexDir={"column"} alignItems={"center"} >
-          { isSubmitted && <Spinner size={"md"} />}
+          { isSubmitted && <Spinner position={"absolute"} left={"50%"} bottom={"50%"} zIndex={1000} size={"md"} />}
           <DocsTable 
               data={transformedDocuments}
               documents={documents}

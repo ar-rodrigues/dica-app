@@ -10,7 +10,7 @@ import { FaFilePdf } from "react-icons/fa";
 import FormModal from '@/components/modal/FormModal'
 
 
-const DocsTable = ({ columns, data, title, hideColumn, isDeletingDocument, setIsDeleting, isDate, editFunction, deleteFunction, useFormHook, webcamRef, cameraModal, fileInputRef, isSubmitted, setIsSubmitted, onCreateDocument, isLoadingFile, setIsLoadingFile, onDocumentEdit,onRowEditComplete }, ref) => {   
+const DocsTable = ({ columns, data, title, hideColumn, isDeletingDocument, setIsDeletingDocument, isDate, editFunction, deleteFunction, useFormHook, webcamRef, cameraModal, fileInputRef, isSubmitted, setIsSubmitted, onCreateDocument, isLoadingFile, setIsLoadingFile, onDocumentEdit,onRowEditComplete }, ref) => {   
     const [filters, setFilters] = useState({
         global: { value: null, matchMode: FilterMatchMode.CONTAINS },
         ...columns?.reduce((acc, column) => (

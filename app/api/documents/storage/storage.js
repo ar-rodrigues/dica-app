@@ -1,7 +1,7 @@
-export async function fetchFiles(fileName, folder) {
-  if(!fileName) return { error: 'No file name provided', status: 400 }
+export async function fetchFiles(filePath) {
+  if(!filePath) return { error: 'No file name provided', status: 400 }
     try {
-      const response = await fetch(`/api/documents/storage?fileName=${fileName}${folder?`&folder=${folder}`:''}`);
+      const response = await fetch(`/api/documents/storage?filePath=${filePath}`);
       if (!response.ok) {
         console.log('Failed to fetch files');
         throw new Error(`Failed to fetch files: ${response.status} [${response.statusText}]`);
