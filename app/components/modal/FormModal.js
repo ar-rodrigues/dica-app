@@ -34,7 +34,7 @@ const FormModal = forwardRef(({ formModal, title, fields, setupOptions, hideFiel
 
   const selectedUnidad = watch("unidad_adm");
   const [anexosOptions, setAnexosOptions] = useState([]);
-  
+  //console.log(setupOptions)
   useEffect(() => {
     if (selectedUnidad) {
       const selectedData = setupOptions.find(item => item.unidad === selectedUnidad);
@@ -42,7 +42,6 @@ const FormModal = forwardRef(({ formModal, title, fields, setupOptions, hideFiel
         setValue("entrante", selectedData.entrante);
         setValue("saliente", selectedData.saliente);
         setValue("responsable", selectedData.responsable);
-        setAnexosOptions(selectedData.anexos.map(({ anexo }) => ({ value: anexo, label: anexo })));
       }
     }
   }, [selectedUnidad, setValue, setupOptions]);

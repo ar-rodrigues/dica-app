@@ -10,10 +10,11 @@ import { createClient } from '@/utils/supabase/server';
 export async function DELETE(request, { params }) {
     const supabase = createClient()
     const id = params.id
+    console.log("delete route setups",id)
 
     try {
         const { data, error } = await supabase
-        .from('setups')
+        .from('setups_v2')
         .delete()
         .eq('id', id)
         .select()
@@ -39,12 +40,12 @@ export async function PUT(request, { params }) {
     const supabase = createClient()
     const id = params.id
     const updateData = await request.json()
-    console.log(id)
-    console.log("api route, updateData",updateData)
+    //console.log(id)
+    //console.log("api route, updateData",updateData)
 
     try {
         const { data, error } = await supabase
-            .from('setups')
+            .from('setups_v2')
             .update(updateData)
             .eq('id', id)
             .select()

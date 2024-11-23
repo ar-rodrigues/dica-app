@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { checkUserRole } from '@/login/actions';
 
 import { Box, VStack, Button, useBreakpointValue, Text } from '@chakra-ui/react';
-import LogoutButton from '@/components/logout/LogoutButton';
+import LogoutButton from '@/components/buttons/LogoutButton';
 import SidebarLink from './SidebarLink';
 // Import icons for sidebar navigation.
 import { FiHome, FiUsers } from 'react-icons/fi'; 

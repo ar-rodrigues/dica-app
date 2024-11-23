@@ -38,6 +38,7 @@ export async function fetchSetup() {
   }
   
   export async function createSetup(newSetup) {
+    console.log("CREATE SETUP FUNCTION: ", newSetup)
     try {      
       const response = await fetch('/api/setups', {
         method: 'POST',

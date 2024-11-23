@@ -18,32 +18,36 @@ import { updateDocument } from "@/api/documents/documents"
 const CameraCapture = forwardRef(({ register, name, rowData, isEditing=false, cameraModal: {isOpen, onOpen, onClose} }, ref) => {
   const editImageModal = useDisclosure()
   const [photos, setPhotos] = useState([])
-  const [storedPhotos, setStoredPhotos] = useState([])
   const [selectedPhotoUrl, setSelectedPhotoUrl] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  useEffect(() => {
-    if(rowData?.value && isEditing){
-      setIsLoading(true)
-      const getUrls = async ()=>{
-        const urls = await Promise.all(rowData.value.map(async file=> {
-          const url = await fetchFiles(file.path)
-          return { dataURL: url.url, path: file.path }
-        }))
-        rowData?.editorCallback(urls)
-        setIsLoading(false)
-      }
-      getUrls()
-    }
-  },[register])
 
-
+  
   useEffect(() => {
     if(rowData?.value){
-      rowData.editorCallback(rowData.value)
+      setPhotos(rowData.value)
+    }
+  }, [rowData?.value, isEditing])
+
+  const handleOpenModal = async (photo)=>{
+    editImageModal.onOpen()
+    setIsLoading(true)
+    if(photo.path){
+      const storedPhotoUrl = await fetchFiles(photo.path)
+      setSelectedPhotoUrl({name: photo.fileName, url: storedPhotoUrl.url, path: photo.path})
+      setIsLoading(false)
+    } else{
+      const photoObjUrl = URL.createObjectURL(photo.file)
+      setSelectedPhotoUrl({name: photo.file.name, url: photoObjUrl, path: null})
       setIsLoading(false)
     }
-  }, [register, rowData?.value, isEditing])
+  }
+
+  const handleCloseModal = ()=>{
+    editImageModal.onClose()
+    !selectedPhotoUrl.path && URL.revokeObjectURL(selectedPhotoUrl.url)
+    setSelectedPhotoUrl(null)
+  }
 
   
   const capturePhoto = useCallback(() => {
@@ -59,8 +63,7 @@ const CameraCapture = forwardRef(({ register, name, rowData, isEditing=false, ca
           const newPhoto = { dataURL: imageSrc, file }; // Keep both dataURL for display and File for upload
           setPhotos((prevPhotos) => {
             const updatedPhotos = [...prevPhotos, newPhoto];
-            //console.log("updatedPhotos",updatedPhotos)
-            rowData?.editorCallback([...updatedPhotos, ...rowData.value]);
+            rowData?.editorCallback(updatedPhotos);
             // Register photos with the form
             register(name).onChange({ target: { name, value: updatedPhotos } });
             return updatedPhotos;
@@ -78,12 +81,24 @@ const CameraCapture = forwardRef(({ register, name, rowData, isEditing=false, ca
     register(name).onChange({ target: { name, value: photos } });
   }, [register, name]);
 
-  const handleEditingRemovePhoto = useCallback(async (photoUrl) => {
-    const newRowData = rowData?.value.filter((photo) => photo.dataURL !== photoUrl )
-    rowData?.editorCallback(newRowData)
-    setSelectedPhotoUrl(null)
-    editImageModal.onClose()
-  })
+  const handleEditingRemovePhoto = (photo) => {
+    if(photo.path) {
+      // Remove stored photo from photos state
+      const newPhotos = photos.filter((p) => p.path !== photo.path)
+      setPhotos(newPhotos)
+      rowData?.editorCallback(newPhotos)
+      // close modal
+      editImageModal.onClose()
+    } else {
+      // Remove local photo from photos state
+      const newPhotos = photos.filter((p) => p.file.name !== photo.name)
+      setPhotos(newPhotos)
+      rowData?.editorCallback(newPhotos)
+      // close modal
+      editImageModal.onClose()
+    }
+    register(name).onChange({ target: { name, value: photos } });
+  }
 
   
 
@@ -113,18 +128,17 @@ const CameraCapture = forwardRef(({ register, name, rowData, isEditing=false, ca
           isEditing && 
           <Flex wrap="wrap" w="fit" m={2} border="1px solid #eee" borderRadius="md" overflowX="auto" justify={"center"} align={"center"} minW={"40px"} >
             {
-              rowData?.value.map((photo, index)=>{
-                const photoUrl = photo.dataURL
+              photos.map((photo, index)=>{
                 const photoIcon = (
                   <Flex key={index} justify={"center"} align={"center"} p={2}  minW={"80px"} >
-                    <Button onClick={ () => {editImageModal.onOpen(),setSelectedPhotoUrl(photoUrl)} } size="xs" p={2} > <FaFileImage /> </Button>
-                    <Modal isOpen={editImageModal.isOpen} onClose={ () => {editImageModal.onClose(), setSelectedPhotoUrl(null)} } size={"md"} >
+                    <Button onClick={ () => handleOpenModal(photo) } size="xs" p={2} > <FaFileImage /> </Button>
+                    <Modal isOpen={editImageModal.isOpen} onClose={handleCloseModal} size={"md"} >
                       <ModalOverlay />
                       <ModalContent >
                         <Button leftIcon={<FaTrash />} onClick={() => handleEditingRemovePhoto(selectedPhotoUrl)} size="sm" position="absolute" bottom="2" left="2" colorScheme="red" zIndex="1" >
                           Eliminar Imagen
                         </Button>
-                        <Image src={selectedPhotoUrl} w={"full"} h={"full"} objectFit="cover" rounded="md" />
+                        <Image src={selectedPhotoUrl?.url} w={"full"} h={"full"} objectFit="cover" rounded="md" />
                       </ModalContent>
                     </Modal>
                   </Flex>

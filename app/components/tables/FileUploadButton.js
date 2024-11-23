@@ -15,16 +15,19 @@ export default function FileUploadButton({ isExport = false, data, setData, tabl
 
     const importCSV = async (event) => {
         const file = event.files[0];
+        
         setIsLoading(true);
         Papa.parse(file, {
           header: true,
           skipEmptyLines: true,
           complete: async (results) => {
             try {
-                //console.log('Results:', results)
+              console.log('Results:', results)
               const creationPromises = results.data.map((userRow) => {
                 // Extract data from each user row based on dataStructure
                 const newData = dataStructure.reduce((acc, col) => {
+                  console.log(col)
+                  
                   let value = userRow[col.field]?.trim(); // Trim whitespace from the end
                   switch (col.type) {
                     case String:
@@ -42,6 +45,7 @@ export default function FileUploadButton({ isExport = false, data, setData, tabl
                   return acc;
                 }, {});
 
+                console.log("NEW DATA", newData)
                 // Filter out rows with all empty fields
                 if (Object.values(newData).some(value => value !== '' && value !== undefined)) {
                     //console.log("import component results: ", newData);
@@ -71,7 +75,7 @@ export default function FileUploadButton({ isExport = false, data, setData, tabl
               });
             } finally {
               setIsLoading(false);
-              setData([...data, ...results.data])
+              //setData([...data, ...results.data])
               //fileUploadRef?.current.clear();
             }
           },

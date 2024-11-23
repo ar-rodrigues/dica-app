@@ -7,7 +7,7 @@ import { createClient } from '@/utils/supabase/server';
  * ///
  * /////// GET /api/anexos
  */
-const table = "anexos"
+const table = "setups_v2_expanded"
 export async function GET() {
     const supabase = createClient();
   const { data: entries, error } = await supabase

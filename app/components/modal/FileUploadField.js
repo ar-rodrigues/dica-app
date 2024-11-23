@@ -1,4 +1,4 @@
-import { useCallback, useState, forwardRef } from "react";
+import { useCallback, useState, forwardRef, useEffect } from "react";
 import {
     Input, Box, Text, List, ListItem,
     ListIcon, FormLabel, FormControl,
@@ -17,6 +17,10 @@ const FileUploadField = forwardRef(({ register, name, rowData, isEditing = false
     const fileViewModal = useDisclosure()
     const [ selectedFileUrl, setSelectedFileUrl ] = useState(null)
     const [isLoading, setIsLoading] = useState(false)
+
+    useEffect(()=>{
+        setFiles(rowData?.value || [])
+    }, [rowData?.value])
 
     const handleFileChange = useCallback(async () => {
         const selectedFiles = Array.from(ref.current.files);

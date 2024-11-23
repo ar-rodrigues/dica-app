@@ -19,7 +19,7 @@ const DocsTable = ({ columns, data, title, hideColumn, isDeletingDocument, setIs
     })
     const formModal = useDisclosure();
     const [ deletingDocumentId, setDeletingDocumentId ] = useState(null)
-
+    
     const dateBodyTemplate = (rowData) => {
         const dateField = isDate.find(field => rowData[field]);
         const formatedDate = moment(rowData[dateField]).format('DD/MM/YY HH:mm')
@@ -156,7 +156,7 @@ const DocsTable = ({ columns, data, title, hideColumn, isDeletingDocument, setIs
                                                                                     width: "20%"
                                                                                 }}
                                                                                    body={ (rowData) => fileBodyTemplate(rowData, field) }
-                                                                                   editor={(rowData)=>onDocumentEdit(rowData)}
+                                                                                   editor={(rowData)=> onDocumentEdit(rowData)}
                                                                                 />
                                                                             ) : !hideColumn?.includes(field) && (
                                                                             <Column 

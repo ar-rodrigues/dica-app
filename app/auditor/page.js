@@ -30,7 +30,7 @@ export default function Auditor() {
   const [isLoadingFile, setIsLoadingFile] = useState({ fileId: "", loading: false });
   const cameraModal = useDisclosure()
 
-
+  
   const {
     register,
     formState: { errors },
@@ -120,7 +120,7 @@ export default function Auditor() {
   const handleDocumentEdit = (rowData) => {
     const enabledFields = ["comentarios", "nombre", "documento", "foto"]
     const isColumn = (field) => rowData.field.includes(field)
-    const listOfDocs = rowData.field.includes("documento") ? rowData.value : []
+    //const listOfDocs = rowData.field.includes("foto") ? rowData.value : ""
     return (
         isColumn("comentarios") ?
             <InputTextarea
@@ -201,21 +201,6 @@ export default function Auditor() {
             documento: storedUpdatePaths.documentoPath, 
             foto: storedUpdatePaths.fotoPath 
           })
-        console.log("have to fix this", documents)
-        ////////////////////////////////////////////// HERE IS THE PROBLEM  //////////////////////////////////////////////
-        // if (newUpdateDocument?.data?.[0]) {
-        //   const updatedDoc = newUpdateDocument.data[0];
-        //   setDocuments((prevDocuments) =>
-        //     prevDocuments.map((doc) => 
-        //       {
-        //         console.log("docs have same id:", doc.id === updatedDoc.id)
-        //         doc.id === updatedDoc.id ? updatedDoc : doc}
-        //     )
-        //   );
-        // } else {
-        //   console.error('Unexpected document update response structure:', newUpdateDocument);
-        // }
-        
       } else {
         console.error("Error storing file updates:")
         return setIsLoadingFile({fileId: "", loading: false})
@@ -225,8 +210,7 @@ export default function Auditor() {
     } finally {
       setIsLoadingFile({fileId: "", loading: false})
       setIsSubmitted(false)
-      console.log("documents after update", documents)
-      window.location.reload()
+      //window.location.reload()
     }
   }
 
@@ -253,7 +237,7 @@ export default function Auditor() {
         }
       }
       fetchData()
-  }, [])
+  }, [documents])
 
   // Define the fields configuration at the component level
   const fieldsToInclude = [
