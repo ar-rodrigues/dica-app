@@ -108,7 +108,6 @@ export default function ImportSheetsButton({ uploadFunction }) {
   useEffect(() => {
     const alertTimer = setTimeout(() => {
       setAlert(defaultAlert);
-      setFile();
     }, 2000);
 
     return () => clearTimeout(alertTimer);

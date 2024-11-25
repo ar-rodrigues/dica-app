@@ -169,15 +169,6 @@ const StandardTable = ({
         <Flex alignItems={'center'} justifyContent={'flex-end'}>
           <FileUploadButton isExport={true} data={data} tableName={title} />
           <ImportSheetsButton uploadFunction={uploadFunction} />
-          {
-            //     <FileUploadButton
-            //     data={data}
-            //     setData={setData}
-            //     uploadFunction={uploadFunction}
-            //     dataStructure={dataStructure}
-            //     fileType={".csv"}
-            // />
-          }
         </Flex>
       </Grid>
       <Box overflowX="auto" w="full">

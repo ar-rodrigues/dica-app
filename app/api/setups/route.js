@@ -8,7 +8,9 @@ import { createClient } from '@/utils/supabase/server';
  */
 export async function GET() {
   const supabase = createClient();
-  const { data: entries, error } = await supabase.from('setups_v2').select('*');
+  const { data: entries, error } = await supabase
+    .from('setups_with_documents')
+    .select('*');
 
   const headers = Object.keys(entries[0]);
 
@@ -26,6 +28,7 @@ export async function GET() {
         'Saliente',
         'Anexos',
         'Responsable',
+        'Documents',
       ],
       headerTypes: [
         'string',
@@ -35,6 +38,7 @@ export async function GET() {
         'string',
         'array',
         'string',
+        'array',
       ],
     });
   }
@@ -47,39 +51,38 @@ export async function GET() {
 
 export async function POST(request) {
   try {
-    const newEntry = await request.json();
-    console.log('NEW ENTRY', newEntry);
+    let newEntry = await request.json();
 
-    console.log('FIX THIS PART');
-    // Check if anexos is a string
-    if (typeof newEntry.anexos === 'string' && newEntry.anexos.trim() !== '') {
-      newEntry.anexos.split(',').map((item) => item.trim());
-    } else {
-      newEntry.anexos;
+    console.log('NEW ENTRY ON ROUTE SETUPS', newEntry);
+    // Map newEntry and transform anexos from string to array
+    if (Array.isArray(newEntry)) {
+      newEntry = newEntry.map((entry) => {
+        if (typeof entry.anexos === 'string' && entry.anexos.trim() !== '') {
+          let anexosArray = entry.anexos.split(',');
+          entry.anexos = anexosArray.map((item) => item.trim());
+        } else {
+          entry.anexos;
+        }
+
+        entry.unidad_adm = entry.unidad_adm.toLowerCase();
+
+        // Filter out 'id' and 'created_at'
+        let filteredEntry = Object.fromEntries(
+          Object.entries(entry).filter(
+            ([key]) =>
+              key !== 'id' && key !== 'created_at' && key !== 'documents',
+          ),
+        );
+
+        return filteredEntry;
+      });
     }
-
-    // Filter out 'id' and 'created_at'
-    const filteredEntry = Object.fromEntries(
-      Object.entries(newEntry).filter(
-        ([key]) => key !== 'id' && key !== 'created_at',
-      ),
-    );
-
-    console.log('FILTERED ENTRY', filteredEntry);
-    // Convert 'unidad_adm' to lowercase
-    const newUnidadAdm = filteredEntry.map(
-      (entry) => console.log(entry),
-      //entry.unidad_adm?.toLowerCase(),
-    );
-
-    console.log('NEW ENTRY FILTERED', filteredEntry);
-    console.log('NEW UNIDAD ADM:', newUnidadAdm);
 
     const supabase = createClient();
 
     const { data: setupData, error: setupDataError } = await supabase
       .from('setups_v2')
-      .insert([{ ...filteredEntry, anexos }])
+      .insert([...newEntry])
       .select();
 
     if (setupDataError) {
