@@ -12,7 +12,9 @@ export async function GET() {
     .from('setups_with_documents')
     .select('*');
 
-  const headers = Object.keys(entries[0]);
+  console.log('ROUTE SETUPS', entries);
+
+  const headers = entries.length > 0 ? Object.keys(entries[0]) : [];
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -53,18 +55,18 @@ export async function POST(request) {
   try {
     let newEntry = await request.json();
 
-    console.log('NEW ENTRY ON ROUTE SETUPS', newEntry);
+    console.log('NEW ENTRY ON ROUTE SETUPS', typeof newEntry);
     // Map newEntry and transform anexos from string to array
     if (Array.isArray(newEntry)) {
       newEntry = newEntry.map((entry) => {
         if (typeof entry.anexos === 'string' && entry.anexos.trim() !== '') {
-          let anexosArray = entry.anexos.split(',');
+          let anexosArray = entry.anexos.split(';');
           entry.anexos = anexosArray.map((item) => item.trim());
         } else {
           entry.anexos;
         }
 
-        entry.unidad_adm = entry.unidad_adm.toLowerCase();
+        entry.unidad_adm = entry.unidad_adm?.toLowerCase();
 
         // Filter out 'id' and 'created_at'
         let filteredEntry = Object.fromEntries(

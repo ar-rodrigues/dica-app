@@ -4,7 +4,7 @@ import { DataTable } from 'primereact/datatable';
 import { FilterMatchMode } from 'primereact/api';
 import { Column } from 'primereact/column';
 import { Dropdown } from 'primereact/dropdown';
-import { Box, Text, Flex, Grid, Button } from '@chakra-ui/react';
+import { Box, Text, Flex, Grid, Button, Spinner } from '@chakra-ui/react';
 import { SingleDatepicker } from 'chakra-dayzed-datepicker';
 import { parseISO } from 'date-fns';
 import { MdDelete, MdModeEdit } from 'react-icons/md';
@@ -144,6 +144,14 @@ const StandardTable = ({
     );
   };
 
+  if (!data) {
+    return (
+      <Flex flexDir={'column'} justifyContent={'center'} alignItems={'center'}>
+        <Spinner size={'xl'} />
+      </Flex>
+    );
+  }
+
   return (
     <Box w="full" p={4}>
       <Grid
@@ -172,88 +180,95 @@ const StandardTable = ({
         </Flex>
       </Grid>
       <Box overflowX="auto" w="full">
-        <DataTable
-          value={data}
-          tableStyle={{
-            minWidth: '100%',
-            minBlockSize: '200px',
-            fontSize: '0.875rem',
-          }}
-          loading={!data || data.length === 0}
-          filters={filters}
-          filterDisplay="row"
-          paginator
-          rows={10}
-          editMode="row"
-          onRowEditComplete={(rowData) => {
-            editFunction(rowData.data.id, rowData.newData);
-            setData(
-              data.map((item) =>
-                item.id === rowData.data.id ? rowData.newData : item,
-              ),
-            );
-          }}
-          emptyMessage="Ningún dato encontrado."
-          scrollable
-          removableSort
-          scrollHeight="1900px"
-        >
-          {columns?.map(
-            (column, index) =>
-              // Check if the column field is in the hideColumn array
-              !hideColumn?.includes(column.field) && (
-                <Column
-                  key={index}
-                  field={column.field}
-                  header={column.header}
-                  filter
-                  sortable
-                  showFilterMatchModes={false}
-                  filterElement={
-                    // Check if the column field is in the dropdownColumn array
-                    dropdownColumn?.some(
-                      (dropdownItem) => dropdownItem.field === column.field,
-                    )
-                      ? dropdownRowFilterTemplate
-                      : undefined
-                  }
-                  filterPlaceholder={`Buscar por ${column.header.toLowerCase()}...`}
-                  body={
-                    isDate?.includes(column.field)
-                      ? dateBodyTemplate
-                      : column.type === 'array'
-                      ? arrayBodyTemplate
-                      : undefined
-                  }
-                  editor={(options) => handleEdit(options)}
-                  style={{
-                    fontSize: '0.875rem',
-                    minWidth: '200px',
-                  }}
-                />
-              ),
-          )}
-          {editFunction && (
-            <Column header="Editar" frozen alignFrozen="right" rowEditor />
-          )}
-          {deleteFunction && (
-            <Column
-              header="Eliminar"
-              frozen
-              alignFrozen="right"
-              body={(rowData) => (
-                <Button
-                  onClick={() => {
-                    deleteFunction(rowData.id);
-                    setData(data.filter((item) => item.id !== rowData.id));
-                  }}
-                >
-                  <MdDelete />
-                </Button>
-              )}
-            />
-          )}
-        </DataTable>
+        {data.length === 0 && (
+          <Text textAlign={'center'} fontSize={'md'}>
+            Ningun dato disponible todavia
+          </Text>
+        )}
+        {data.length > 0 && (
+          <DataTable
+            value={data}
+            tableStyle={{
+              minWidth: '100%',
+              minBlockSize: '200px',
+              fontSize: '0.875rem',
+            }}
+            loading={!data || data.length === 0}
+            filters={filters}
+            filterDisplay="row"
+            paginator
+            rows={10}
+            editMode="row"
+            onRowEditComplete={(rowData) => {
+              editFunction(rowData.data.id, rowData.newData);
+              setData(
+                data.map((item) =>
+                  item.id === rowData.data.id ? rowData.newData : item,
+                ),
+              );
+            }}
+            emptyMessage="Ningún dato encontrado."
+            scrollable
+            removableSort
+            scrollHeight="1900px"
+          >
+            {columns?.map(
+              (column, index) =>
+                // Check if the column field is in the hideColumn array
+                !hideColumn?.includes(column.field) && (
+                  <Column
+                    key={index}
+                    field={column.field}
+                    header={column.header}
+                    filter
+                    sortable
+                    showFilterMatchModes={false}
+                    filterElement={
+                      // Check if the column field is in the dropdownColumn array
+                      dropdownColumn?.some(
+                        (dropdownItem) => dropdownItem.field === column.field,
+                      )
+                        ? dropdownRowFilterTemplate
+                        : undefined
+                    }
+                    filterPlaceholder={`Buscar por ${column.header.toLowerCase()}...`}
+                    body={
+                      isDate?.includes(column.field)
+                        ? dateBodyTemplate
+                        : column.type === 'array'
+                        ? arrayBodyTemplate
+                        : undefined
+                    }
+                    editor={(options) => handleEdit(options)}
+                    style={{
+                      fontSize: '0.875rem',
+                      minWidth: '200px',
+                    }}
+                  />
+                ),
+            )}
+            {editFunction && (
+              <Column header="Editar" frozen alignFrozen="right" rowEditor />
+            )}
+            {deleteFunction && (
+              <Column
+                header="Eliminar"
+                frozen
+                alignFrozen="right"
+                body={(rowData) => (
+                  <Button
+                    onClick={() => {
+                      deleteFunction(rowData.id);
+                      setData(data.filter((item) => item.id !== rowData.id));
+                    }}
+                  >
+                    <MdDelete />
+                  </Button>
+                )}
+              />
+            )}
+          </DataTable>
+        )}
       </Box>
     </Box>
   );

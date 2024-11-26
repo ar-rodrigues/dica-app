@@ -15,6 +15,7 @@ import {
   Box,
   Input,
   Text,
+  Spinner,
 } from '@chakra-ui/react';
 import {
   Alert,
@@ -36,8 +37,9 @@ import {
 } from '@chakra-ui/react';
 import { FiUpload, FiDownload } from 'react-icons/fi';
 import moment from 'moment';
+import * as XLSX from 'xlsx';
 
-const defaultAlert = { status: '', message: '' };
+const defaultAlert = { status: '', message: '', timer: 2000 };
 
 export default function ImportSheetsButton({ uploadFunction }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -51,30 +53,99 @@ export default function ImportSheetsButton({ uploadFunction }) {
     onClose();
   };
 
-  const onDrop = useCallback((acceptedFiles) => {
-    if (acceptedFiles.length === 0) {
+  const onDrop = useCallback(async (acceptedFiles) => {
+    setLoading(true);
+    console.log(loading);
+    if (acceptedFiles?.length === 0) {
       console.log('No file selected');
       setAlert({ status: 'error', message: 'Ningun archivo seleccionado' });
+      setLoading(false);
       return;
     }
 
     const newFile = acceptedFiles[0];
+    const reader = new FileReader();
+    const rABS = !!reader.readAsBinaryString;
+    reader.onload = (e) => {
+      try {
+        const content = XLSX.read(e.target.result, {
+          type: rABS ? 'binary' : 'array',
+        });
 
-    Papa.parse(newFile, {
-      header: true,
-      skipEmptyLines: true,
-      complete: (results) => {
-        setFile({ data: results.data, headers: results.meta.fields });
+        const sheetName = content.SheetNames[0];
+
+        const worksheet = content.Sheets[sheetName];
+
+        const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+        console.log('data', data);
+
+        const sheetHeaders =
+          data?.length > 0 ? data[0].map((head) => head.toLowerCase()) : [];
+        const requiredHeaders = [
+          'unidad_adm',
+          'entrante',
+          'saliente',
+          'anexos',
+          'responsable',
+        ];
+
+        let missingCol = [];
+
+        requiredHeaders.map((head) => {
+          if (!sheetHeaders.includes(head)) return missingCol.push(head);
+        });
+
+        if (missingCol.length > 0) {
+          console.error(
+            `Columnas requeridas o nombre incorrecto: ${missingCol}`,
+          );
+          setAlert({
+            status: 'error',
+            message: `Columnas requeridas o nombre incorrecto: ${missingCol}`,
+            timer: 5000,
+          });
+          setLoading(false);
+          return;
+        }
+
+        // Transform data array of arrays into array of objects be send to the DB as entries
+        const entries = data
+          .slice(1)
+          .map((row) =>
+            Object.fromEntries(data[0].map((key, index) => [key, row[index]])),
+          );
+
+        setFile({ data: entries, headers: sheetHeaders });
         setAlert({ status: 'success', message: 'Archivo cargado con exito!' });
-      },
-      error: (error) => {
+        setLoading(false);
+        console.log(loading);
+      } catch (error) {
         console.log('Error parsing file:', error);
         setAlert({ status: 'Error', message: 'Error al cargar los archivos' });
-      },
-    });
+        setLoading(false);
+      }
+    };
+
+    reader.onerror = (error) => {
+      console.log('Error reading file:', error);
+      setAlert({ status: 'Error', message: 'Error al cargar los archivos' });
+      setLoading(false);
+    };
+
+    // Read the file as binary string to support multiple formats
+    if (rABS) await reader.readAsBinaryString(newFile);
+    else await reader.readAsArrayBuffer(newFile);
   }, []);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      'text/csv': ['.csv'],
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': [
+        '.xlsx',
+      ],
+    },
+  });
 
   const handleSubmit = async () => {
     if (!file)
@@ -85,14 +156,18 @@ export default function ImportSheetsButton({ uploadFunction }) {
     try {
       setLoading(true);
       const uploadFile = await uploadFunction(file.data);
-      console.log(uploadFile);
       if (uploadFile.error) {
+        console.log(uploadFile.error);
         setLoading(false);
         setFile();
-        return setAlert({
+        setAlert({
           status: 'error',
-          message: uploadFile.error,
+          message: `Error al enviar dato: ${
+            uploadFile?.error?.message || 'error'
+          }`,
+          timer: 5000,
         });
+        return;
       } else {
         setAlert({ status: 'success', message: 'Archivo Cargado con exito' });
         const closeModalTimer = setTimeout(() => {
@@ -102,13 +177,25 @@ export default function ImportSheetsButton({ uploadFunction }) {
         }, 2000);
         return () => clearTimeout(closeModalTimer);
       }
-    } catch (error) {}
+    } catch (error) {
+      console.log(`Error submitting data: ${error || 'error'}`);
+      setFile();
+      setLoading(false);
+      setAlert({
+        status: 'error',
+        message: `Error al enviar dato: ${
+          uploadFile?.error?.message || 'error'
+        }`,
+        timer: 5000,
+      });
+      return;
+    }
   };
 
   useEffect(() => {
     const alertTimer = setTimeout(() => {
       setAlert(defaultAlert);
-    }, 2000);
+    }, alert.timer || 2000);
 
     return () => clearTimeout(alertTimer);
   }, [alert]);
@@ -189,7 +276,15 @@ export default function ImportSheetsButton({ uploadFunction }) {
             </Alert>
           )}
           <ModalCloseButton />
-          <ModalBody>{PreviewTable}</ModalBody>
+          <ModalBody>
+            {!loading ? (
+              PreviewTable
+            ) : (
+              <Flex flexDir={'column'} justify={'center'} alignItems={'center'}>
+                <Spinner size={'xl'} />
+              </Flex>
+            )}
+          </ModalBody>
           <ModalFooter>
             {!file && Dropzone}
             {file && (
@@ -200,7 +295,6 @@ export default function ImportSheetsButton({ uploadFunction }) {
                 gap={'1rem'}
               >
                 <Button
-                  disabled={loading ? true : false}
                   colorScheme="blue"
                   variant={'outline'}
                   onClick={() => setFile()}

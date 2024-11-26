@@ -74,8 +74,9 @@ export default function Setup() {
     };
     fetchData();
   }, []);
+  console.log(userRole);
 
-  if (!userRole && !setups) {
+  if (!userRole || !setups) {
     return (
       <Flex justify="center" align="center" h="100vh">
         <Spinner size="xl" />
@@ -96,7 +97,6 @@ export default function Setup() {
           Setups
         </Heading>
         <Box w="100%" overflowX="auto" mb={8}>
-          {!setups && <Spinner size="xl" />}
           {setups && (
             <StandardTable
               data={setups}
