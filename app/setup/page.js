@@ -74,7 +74,6 @@ export default function Setup() {
     };
     fetchData();
   }, []);
-  console.log(userRole);
 
   if (!userRole || !setups) {
     return (
@@ -103,8 +102,8 @@ export default function Setup() {
               setData={setSetups}
               columns={columns}
               title={'Setup'}
-              hideColumn={['id', 'created_at', 'documents']}
-              dateColumn={['created_at']}
+              hideColumn={['id', 'created_at', 'closed_at', 'documents']}
+              dateColumn={['created_at', 'closed_at']}
               uploadFunction={createSetup}
               dataStructure={columns}
               editFunction={updateSetup}

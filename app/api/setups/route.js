@@ -12,9 +12,43 @@ export async function GET() {
     .from('setups_with_documents')
     .select('*');
 
-  console.log('ROUTE SETUPS', entries);
+  const { data: types, errorTypes } = await supabase
+    .from('setups_with_documents_column_types')
+    .select('*');
 
-  const headers = entries.length > 0 ? Object.keys(entries[0]) : [];
+  const headers = types
+    ? Object.keys(types).map((key) => types[key]['column'])
+    : [];
+
+  const nameHeaders = types
+    ? Object.keys(types).map((key) => {
+        let header = types[key]['column'];
+        switch (header) {
+          case 'id':
+            return 'ID';
+          case 'created_at':
+            return 'Creado';
+          case 'unidad_adm':
+            return 'Unidad Administrativa';
+          case 'entrante':
+            return 'Entrante';
+          case 'saliente':
+            return 'Saliente';
+          case 'anexos':
+            return 'Anexos';
+          case 'responsable':
+            return 'Responsable';
+          case 'closed_at':
+            return 'Cerrado';
+          case 'documents':
+            return 'Documentos';
+        }
+      })
+    : [];
+
+  const headerTypes = types
+    ? Object.keys(types).map((key) => types[key]['type'].toLowerCase())
+    : [];
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -22,26 +56,8 @@ export async function GET() {
     return NextResponse.json({
       data: entries,
       headers,
-      nameHeaders: [
-        'id',
-        'Creado',
-        'Unidad Administrativa',
-        'Entrante',
-        'Saliente',
-        'Anexos',
-        'Responsable',
-        'Documents',
-      ],
-      headerTypes: [
-        'string',
-        'fecha',
-        'string',
-        'string',
-        'string',
-        'array',
-        'string',
-        'array',
-      ],
+      nameHeaders,
+      headerTypes,
     });
   }
 }
@@ -55,7 +71,6 @@ export async function POST(request) {
   try {
     let newEntry = await request.json();
 
-    console.log('NEW ENTRY ON ROUTE SETUPS', typeof newEntry);
     // Map newEntry and transform anexos from string to array
     if (Array.isArray(newEntry)) {
       newEntry = newEntry.map((entry) => {

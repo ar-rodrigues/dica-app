@@ -16,6 +16,7 @@ import LogoutButton from '@/components/buttons/LogoutButton';
 import SidebarLink from './SidebarLink';
 // Import icons for sidebar navigation.
 import { FiHome, FiUsers } from 'react-icons/fi';
+import { HiBuildingOffice2 } from 'react-icons/hi2';
 import { AiOutlineAudit } from 'react-icons/ai';
 import {
   MdOutlinePhonelinkSetup,
@@ -42,10 +43,8 @@ const Sidebar = () => {
       }
     };
     fetchRole();
-  }, []);
+  }, [pathname === '/home']);
 
-  console.log(userRole);
-  console.log(role);
   // Use breakpoint value to set initial text visibility based on screen size.
   const initialTextVisible = useBreakpointValue({ base: false, md: true });
   // State to manage text visibility for sidebar links.
@@ -59,6 +58,9 @@ const Sidebar = () => {
   useEffect(() => {
     setRole(userRole?.role);
   }, [userRole]);
+
+  console.log(userRole);
+  console.log(role);
 
   // If the current path is '/login', return null (sidebar not needed for login page).
   if (pathname === '/login') return null;
@@ -86,6 +88,12 @@ const Sidebar = () => {
       text: 'Auditor',
       icon: AiOutlineAudit,
       roles: ['admin', 'auditor'],
+    },
+    {
+      href: '/back-office',
+      text: 'Back Office',
+      icon: HiBuildingOffice2,
+      roles: ['admin', 'auditor', 'back-office'],
     },
   ];
 

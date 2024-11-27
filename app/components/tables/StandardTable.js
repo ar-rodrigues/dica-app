@@ -39,19 +39,32 @@ const StandardTable = ({
     ),
   });
 
+  const arrayTypes = ['array', 'jsonb', 'json'];
+  const dateTypes = ['timestamp with time zone'];
+
   const dateBodyTemplate = (rowData) => {
-    const dateField = isDate.find((field) => rowData[field]);
+    const dateField =
+      columns?.find(({ type }) => dateTypes.includes(type))?.field || null;
     return dateField ? moment(rowData[dateField]).format('DD/MM/YYYY') : null;
   };
 
   const arrayBodyTemplate = (rowData) => {
     const arrayField =
-      columns.find((column) => column.type === 'array')?.field || null;
+      columns?.find(({ type }) => arrayTypes.includes(type))?.field || null;
     return arrayField ? (
-      <Flex flexWrap={'wrap'} gap={2}>
-        {rowData[arrayField]?.map((item) => (
-          <Tag severity="success" rounded key={item} value={item} />
-        ))}
+      <Flex flexWrap={'wrap'} gap={1} minW={'500px'}>
+        {rowData[arrayField]?.map((item) => {
+          let itemSubstring = item?.split('-');
+          return (
+            <Tag
+              severity="success"
+              rounded
+              size="sm"
+              key={item}
+              value={itemSubstring[0] || item}
+            />
+          );
+        })}
       </Flex>
     ) : null;
   };
@@ -77,17 +90,21 @@ const StandardTable = ({
     const dropdownOptions =
       dropdownColumn?.find((item) => item.field === rowData.field)?.options ||
       [];
-    const isDateValue = isDate?.includes(rowData.field)
-      ? rowData.value && parseISO(moment(rowData.value).toISOString())
-      : null;
+    // Check for date values to modify
+    const isDateValue =
+      columns?.find(({ type }) => dateTypes.includes(type))?.field ===
+      rowData.field
+        ? rowData.value && parseISO(moment(rowData.value).toISOString())
+        : null;
+
     const isNumber =
       columns
         ?.filter((item) => item.type === 'number')
         ?.map((item) => item.field) || null;
-    const isArray =
-      columns
-        ?.filter((item) => item.type === 'array')
-        ?.map((item) => item.field) || null;
+
+    const isArray = columns?.filter(({ type }) =>
+      arrayTypes?.includes(type),
+    )?.field;
 
     return dropdownColumn?.find((item) => item.field === rowData.field) ? (
       <Dropdown
@@ -120,7 +137,7 @@ const StandardTable = ({
           ],
         }}
       />
-    ) : isArray.includes(rowData.field) ? (
+    ) : isArray?.includes(rowData.type) ? (
       <InputText
         value={rowData.value?.join(',') || ''}
         type="text"
@@ -182,22 +199,22 @@ const StandardTable = ({
       <Box overflowX="auto" w="full">
         {data.length === 0 && (
           <Text textAlign={'center'} fontSize={'md'}>
-            Ningun dato disponible todavia
+            Cargando...
           </Text>
         )}
         {data.length > 0 && (
           <DataTable
             value={data}
             tableStyle={{
-              minWidth: '100%',
-              minBlockSize: '200px',
-              fontSize: '0.875rem',
+              minWidth: '90%',
+              minBlockSize: '30px',
+              fontSize: '0.475rem',
             }}
             loading={!data || data.length === 0}
             filters={filters}
             filterDisplay="row"
             paginator
-            rows={10}
+            rows={20}
             editMode="row"
             onRowEditComplete={(rowData) => {
               editFunction(rowData.data.id, rowData.newData);
@@ -210,39 +227,37 @@ const StandardTable = ({
             emptyMessage="Ningún dato encontrado."
             scrollable
             removableSort
-            scrollHeight="1900px"
+            scrollHeight="90vh"
           >
             {columns?.map(
-              (column, index) =>
-                // Check if the column field is in the hideColumn array
-                !hideColumn?.includes(column.field) && (
+              ({ field, header, type }, index) =>
+                // Show only field that are not in hideColumn
+                !hideColumn?.includes(field) && (
                   <Column
                     key={index}
-                    field={column.field}
-                    header={column.header}
-                    filter
+                    field={field}
+                    header={header}
+                    //filter
                     sortable
                     showFilterMatchModes={false}
                     filterElement={
                       // Check if the column field is in the dropdownColumn array
-                      dropdownColumn?.some(
-                        (dropdownItem) => dropdownItem.field === column.field,
-                      )
+                      dropdownColumn?.includes(field)
                         ? dropdownRowFilterTemplate
-                        : undefined
+                        : null
                     }
-                    filterPlaceholder={`Buscar por ${column.header.toLowerCase()}...`}
+                    filterPlaceholder={`Buscar por ${header.toLowerCase()}...`}
                     body={
-                      isDate?.includes(column.field)
+                      dateTypes?.includes(type)
                         ? dateBodyTemplate
-                        : column.type === 'array'
+                        : arrayTypes?.includes(type)
                         ? arrayBodyTemplate
-                        : undefined
+                        : null
                     }
                     editor={(options) => handleEdit(options)}
                     style={{
-                      fontSize: '0.875rem',
-                      minWidth: '200px',
+                      fontSize: '0.475rem',
+                      minWidth: '60px',
                     }}
                   />
                 ),

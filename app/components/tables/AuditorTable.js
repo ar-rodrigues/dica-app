@@ -18,7 +18,7 @@ import { MdDelete, MdInsertPhoto } from 'react-icons/md';
 import { FaFilePdf } from 'react-icons/fa';
 import FormModal from '@/components/modal/FormModal';
 
-const DocsTable = (
+const AuditorTable = (
   {
     columns,
     documents,
@@ -58,9 +58,6 @@ const DocsTable = (
   });
   const formModal = useDisclosure();
   const [deletingDocumentId, setDeletingDocumentId] = useState(null);
-
-  console.log('DOCUMENTS:', documents);
-  console.log('SETUPS:', setups);
 
   const dateBodyTemplate = (rowData) => {
     const dateField = isDate.find((field) => rowData[field]);
@@ -310,4 +307,4 @@ const DocsTable = (
   );
 };
 
-export default DocsTable;
+export default AuditorTable;

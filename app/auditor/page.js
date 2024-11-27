@@ -20,7 +20,7 @@ import {
   deleteDocument,
 } from '@/api/documents/documents';
 import { fetchSetup } from '@/api/setups/setups';
-import DocsTable from '@/components/tables/DocsTable';
+import AuditorTable from '@/components/tables/AuditorTable';
 import { storeFiles, deleteFiles } from '@/utils/storage/storeFiles';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
@@ -320,7 +320,7 @@ export default function Auditor() {
               size={'md'}
             />
           )}
-          <DocsTable
+          <AuditorTable
             documents={documents}
             setups={setups}
             anexos={anexos}

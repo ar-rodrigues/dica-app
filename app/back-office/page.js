@@ -20,7 +20,7 @@ import {
   deleteDocument,
 } from '@/api/documents/documents';
 import { fetchSetup } from '@/api/setups/setups';
-import DocsTable from '@/components/tables/DocsTable';
+import BackOfficeTable from '@/components/tables/BackOfficeTable';
 import { storeFiles, deleteFiles } from '@/utils/storage/storeFiles';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
@@ -302,7 +302,7 @@ export default function BackOffice() {
       </Flex>
       <Flex direction="column" align="center" mt={8}>
         <Heading as="h2" size="xl" mb={4}>
-          Auditor
+          Back Office
         </Heading>
         <Flex
           w="100%"
@@ -320,7 +320,7 @@ export default function BackOffice() {
               size={'md'}
             />
           )}
-          <DocsTable
+          <BackOfficeTable
             documents={documents}
             setups={setups}
             anexos={anexos}
