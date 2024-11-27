@@ -39,13 +39,6 @@ export async function updateSession(request) {
   const userBi = url.searchParams.get('user');
   const passBi = url.searchParams.get('password');
 
-  console.log('query', userBi, passBi);
-  console.log(
-    'credentials',
-    process.env.POWERBI_USER,
-    process.env.POWERBI_PASSWORD,
-  );
-
   // Power BI API authentication
   const isPowerBiRoute = request.nextUrl.pathname.startsWith('/api/powerbi');
   const validPowerBiUser = process.env.POWERBI_USER;
@@ -57,25 +50,6 @@ export async function updateSession(request) {
     `/api/setups?user=${process.env.POWERBI_USER}&password=${process.env.POWERBI_PASSWORD}`,
     `/api/setups`, // Add Power BI route
   ];
-
-  // // Power BI specific authentication
-  // if (isPowerBiRoute) {
-  //   // Check Power BI credentials
-  //   if (
-  //     !userBi ||
-  //     !passBi ||
-  //     userBi !== validPowerBiUser ||
-  //     passBi !== validPowerBiPassword
-  //   ) {
-  //     return new NextResponse(
-  //       JSON.stringify({ error: 'Unauthorized Power BI Access' }),
-  //       {
-  //         status: 401,
-  //         headers: { 'Content-Type': 'application/json' },
-  //       },
-  //     );
-  //   }
-  // }
 
   if (
     !user &&
