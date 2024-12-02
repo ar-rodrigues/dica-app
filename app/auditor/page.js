@@ -37,6 +37,7 @@ export default function Auditor() {
   const [columns, setColumns] = useState([]);
   const webcamRef = useRef(null);
   const fileInputRef = useRef(null);
+  const [update, setUpdate] = useState(true);
   const [isDeletingDocument, setIsDeletingDocument] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoadingFile, setIsLoadingFile] = useState({
@@ -71,6 +72,7 @@ export default function Auditor() {
         if (payload.eventType === 'INSERT') {
           if (!documents.some((document) => document.id === newDocument.id)) {
             setDocuments((prevDocuments) => [...prevDocuments, newDocument]);
+            setUpdate(true);
           }
         } else if (payload.eventType === 'UPDATE') {
           console.log('Received update');
@@ -79,11 +81,13 @@ export default function Auditor() {
               document?.id === newDocument.id ? newDocument : document,
             ),
           );
+          setUpdate(true);
         } else if (payload.eventType === 'DELETE') {
           setDocuments((prevDocuments) =>
             prevDocuments.filter((document) => document?.id !== oldDocument.id),
           );
           setIsDeletingDocument(false);
+          setUpdate(true);
         }
       },
     },
@@ -230,7 +234,6 @@ export default function Auditor() {
         documento: newDocs,
         foto: newFotos,
       };
-      setIsLoadingFile({ fileId: docId, loading: true });
       setIsSubmitted(true);
       const storeFilesUpdate = await storeFiles(updatedDocument);
       if (storeFilesUpdate) {
@@ -248,7 +251,6 @@ export default function Auditor() {
     } catch (error) {
       console.error('Error updating document:', error);
     } finally {
-      setIsLoadingFile({ fileId: '', loading: false });
       setIsSubmitted(false);
       //window.location.reload()
     }
@@ -277,14 +279,15 @@ export default function Auditor() {
         setDocuments(documentsData.data);
         setAnexos(anexosData.data);
         setColumns(newColumns);
+        setUpdate(false);
       } catch (err) {
         console.error('Error fetching Documents:', err);
       }
     };
-    fetchData();
-  }, [isLoadingFile]);
+    update ? fetchData() : null;
+  }, [update]);
 
-  if (!userRole || !documents) {
+  if (!userRole && documents.length === 0) {
     return (
       <Flex justify="center" align="center" height="100vh">
         <Spinner size="xl" />

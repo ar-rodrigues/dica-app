@@ -41,8 +41,13 @@ export async function PUT(request, { params }) {
 
   // Get the current URL and query parameters
   const url = new URL(request.url);
-  const userBi = url.searchParams.get('user');
-  const passBi = url.searchParams.get('password');
+  const validate = url.searchParams.get('validate');
+  console.log(validate);
+  if (validate) {
+    try {
+      const { data, error } = await supabase.from;
+    } catch (error) {}
+  }
 
   try {
     const { data, error } = await supabase

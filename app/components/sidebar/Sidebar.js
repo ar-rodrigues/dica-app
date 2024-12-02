@@ -32,6 +32,11 @@ const Sidebar = () => {
   // Get the current pathname for active link highlighting.
   const pathname = usePathname();
 
+  if (!userRole || !role) {
+    console.log(userRole);
+    console.log(role);
+  }
+
   // Use the checkUserRole function to determine the user's role and set it in the state.
   useEffect(() => {
     const fetchRole = async () => {
@@ -58,9 +63,6 @@ const Sidebar = () => {
   useEffect(() => {
     setRole(userRole?.role);
   }, [userRole]);
-
-  console.log(userRole);
-  console.log(role);
 
   // If the current path is '/login', return null (sidebar not needed for login page).
   if (pathname === '/login') return null;

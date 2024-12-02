@@ -100,6 +100,7 @@ const BackOfficeTable = (
   return (
     <Box w="100%" h="100%" p={4} mt={10}>
       <Box w={'100%'} overflowX="auto" minW={'360px'}>
+        {!setups && <Spinner size={'xl'} />}
         {setups?.map(({ unidad_adm: unidad, anexos, documents }) => {
           return (
             documents.length > 0 && (

@@ -37,14 +37,16 @@ export default function BackOffice() {
   const [columns, setColumns] = useState([]);
   const webcamRef = useRef(null);
   const fileInputRef = useRef(null);
+  const [update, setUpdate] = useState(true);
   const [isDeletingDocument, setIsDeletingDocument] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [loadingSetups, setLoadingSetups] = useState(false);
   const [isLoadingFile, setIsLoadingFile] = useState({
     fileId: '',
     loading: false,
   });
   const cameraModal = useDisclosure();
-
+  console.log('Update', update);
   const {
     register,
     formState: { errors },
@@ -71,6 +73,7 @@ export default function BackOffice() {
         if (payload.eventType === 'INSERT') {
           if (!documents.some((document) => document.id === newDocument.id)) {
             setDocuments((prevDocuments) => [...prevDocuments, newDocument]);
+            setUpdate(true);
           }
         } else if (payload.eventType === 'UPDATE') {
           console.log('Received update');
@@ -79,11 +82,13 @@ export default function BackOffice() {
               document?.id === newDocument.id ? newDocument : document,
             ),
           );
+          setUpdate(true);
         } else if (payload.eventType === 'DELETE') {
           setDocuments((prevDocuments) =>
             prevDocuments.filter((document) => document?.id !== oldDocument.id),
           );
           setIsDeletingDocument(false);
+          setUpdate(true);
         }
       },
     },
@@ -99,6 +104,7 @@ export default function BackOffice() {
         if (payload.eventType === 'INSERT') {
           if (!setups.some((setup) => setup.id === newSetup.id)) {
             setSetups((prevSetups) => [...prevSetups, newSetup]);
+            setUpdate(true);
           }
         } else if (payload.eventType === 'UPDATE') {
           setSetups((prevSetups) =>
@@ -106,10 +112,12 @@ export default function BackOffice() {
               setup.id === newSetup.id ? newSetup : setup,
             ),
           );
+          setUpdate(true);
         } else if (payload.eventType === 'DELETE') {
           setSetups((prevSetups) =>
             prevSetups.filter((setup) => setup.id !== oldSetup.id),
           );
+          setUpdate(true);
         }
       },
     },
@@ -257,6 +265,7 @@ export default function BackOffice() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoadingSetups(true);
         const documentsData = await fetchDocument();
         const setupsData = await fetchSetup();
         const anexosData = await fetchAnexos();
@@ -277,14 +286,16 @@ export default function BackOffice() {
         setDocuments(documentsData.data);
         setAnexos(anexosData.data);
         setColumns(newColumns);
+        setLoadingSetups(false);
+        setUpdate(false);
       } catch (err) {
         console.error('Error fetching Documents:', err);
       }
     };
-    fetchData();
-  }, [isLoadingFile]);
+    update ? fetchData() : null;
+  }, [update]);
 
-  if (!userRole || !documents) {
+  if (!userRole && !loadingSetups) {
     return (
       <Flex justify="center" align="center" height="100vh">
         <Spinner size="xl" />
